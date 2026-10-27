@@ -1,0 +1,1007 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Tracker Lula 4</title>
+<meta name="description" content="Monitor da formação, da composição, da reorganização administrativa e das prioridades de políticas públicas do 4º mandato de Lula.">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=Source+Serif+4:opsz,wght@8..60,400;8..60,600&display=swap">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.9.0/d3.min.js"></script>
+<style>
+:root {
+  --bg: #f6f5f1; --panel: #ffffff; --fg: #17191c; --fg-muted: #5b5f66; --line: #e2e0da;
+  --ok: #1d7a4a; --warn: #9a5800; --bad: #b8322a; --crit: #d93b3b;
+  --s1: #2a78d6; --s2: #eb6834; --muted-mark: #c9c7c0; --grid: #ecebe6; --axis: #b9b7b0;
+  --pop: #ffffff; --pop-border: #dcdad3; --shadow: 0 6px 24px rgba(20,22,26,.12); --mast: #17191c; --mast-fg: #f6f5f1;
+  --color-bg: var(--bg); --color-panel: var(--panel); --color-fg: var(--fg); --color-fg-muted: var(--fg-muted); --color-border-line: var(--line);
+  --color-ok: var(--ok); --color-warn: var(--warn); --color-bad: var(--bad);
+  --cds-chart-muted: var(--muted-mark); --cds-chart-grid: var(--grid); --cds-chart-axis: var(--axis); --cds-chart-status-critical: var(--crit);
+  --cds-surface-popover: var(--pop); --cds-border: var(--pop-border); --cds-shadow-popover: var(--shadow); --cds-text-secondary: var(--fg-muted);
+  --font-sans: "IBM Plex Sans", system-ui, -apple-system, "Segoe UI", sans-serif; --font-serif: "Source Serif 4", Georgia, "Times New Roman", serif;
+  --cds-font-size-caption: .8125rem; --cds-font-size-body: .9375rem; --cds-font-size-heading: 1.0625rem; --cds-font-size-title: 1.75rem; --cds-font-weight-medium: 600;
+  --cds-gap-xs: 4px; --cds-gap-sm: 8px; --cds-gap-md: 14px; --cds-gap-lg: 22px; --cds-gap-xl: 32px;
+  --cds-pad-xs: 4px; --cds-pad-sm: 8px; --cds-pad-md: 12px; --cds-pad-lg: 18px; --cds-radius: 8px; --cds-dur-slow: .35s;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+  --bg: #111316; --panel: #1a1d21; --fg: #eceae4; --fg-muted: #a3a6ab; --line: #2c3036;
+  --ok: #4fbf86; --warn: #e0a040; --bad: #ef6b5e; --crit: #e66767;
+  --s1: #3987e5; --s2: #d95926; --muted-mark: #4a4e55; --grid: #23272c; --axis: #4a4e55;
+  --pop: #22262b; --pop-border: #353a41; --shadow: 0 6px 24px rgba(0,0,0,.45); --mast: #0a0b0d; --mast-fg: #eceae4; color-scheme: dark;
+} }
+:root[data-theme="dark"] {
+  --bg: #111316; --panel: #1a1d21; --fg: #eceae4; --fg-muted: #a3a6ab; --line: #2c3036;
+  --ok: #4fbf86; --warn: #e0a040; --bad: #ef6b5e; --crit: #e66767;
+  --s1: #3987e5; --s2: #d95926; --muted-mark: #4a4e55; --grid: #23272c; --axis: #4a4e55;
+  --pop: #22262b; --pop-border: #353a41; --shadow: 0 6px 24px rgba(0,0,0,.45); --mast: #0a0b0d; --mast-fg: #eceae4; color-scheme: dark;
+}
+* { box-sizing: border-box; }
+html { -webkit-text-size-adjust: 100%; }
+body { margin: 0; background: var(--bg); color: var(--fg); font-family: var(--font-sans); font-size: var(--cds-font-size-body); line-height: 1.45; }
+img { max-width: 100%; }
+[hidden] { display: none !important; }
+.mast { background: var(--mast); color: var(--mast-fg); }
+.mast-in, .wrap, .foot-in { max-width: 1320px; margin-inline: auto; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
+.mast-in { padding-block: 10px; display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 14px; }
+.mast-name { font-family: var(--font-serif); font-weight: 600; font-size: 1.05rem; letter-spacing: .01em; }
+.mast-desc { font-size: var(--cds-font-size-caption); opacity: .75; }
+.mast-theme { margin-left: auto; font: inherit; font-size: var(--cds-font-size-caption); background: transparent; color: inherit; border: 1px solid rgba(255,255,255,.3); border-radius: 999px; padding: 2px 10px; cursor: pointer; }
+.wrap { padding-block: 22px 40px; }
+.foot { border-top: 1px solid var(--line); }
+.foot-in { padding-block: 18px 28px; font-size: var(--cds-font-size-caption); color: var(--fg-muted); display: flex; flex-direction: column; gap: 4px; }
+.dash-skeleton { color: transparent !important; background: var(--grid); border-radius: 4px; min-width: 3ch; display: inline-block; animation: pulse 1.4s ease-in-out infinite; }
+@keyframes pulse { 50% { opacity: .55; } }
+@media (prefers-reduced-motion: reduce) { .dash-skeleton { animation: none; } }
+.lx-tab:focus-visible, .mast-theme:focus-visible { outline: 2px solid var(--fg); outline-offset: 2px; }
+
+.lx { font-family: var(--font-sans); display: flex; flex-direction: column; gap: var(--cds-gap-lg); }
+.lx h1 { font-family: var(--font-serif); font-weight: 400; font-size: var(--cds-font-size-title); margin: 0; text-wrap: balance; }
+.lx h2 { font-size: var(--cds-font-size-heading); font-weight: var(--cds-font-weight-medium); margin: 0; text-wrap: balance; }
+.lx h3 { font-size: var(--cds-font-size-body); font-weight: var(--cds-font-weight-medium); margin: 0; }
+.lx p { margin: 0; }
+.lx-muted { color: var(--color-fg-muted); font-size: var(--cds-font-size-caption); }
+.lx-meta { display: flex; flex-wrap: wrap; gap: var(--cds-gap-xs) var(--cds-gap-lg); margin-top: var(--cds-gap-xs); }
+.lx-meta b { font-weight: var(--cds-font-weight-medium); color: var(--color-fg); }
+.lx-tabs { display: flex; gap: var(--cds-gap-xs); overflow-x: auto; border-bottom: 1px solid var(--color-border-line); padding-bottom: 2px; }
+.lx-tab { font: inherit; font-size: var(--cds-font-size-caption); background: none; border: 0; border-bottom: 2px solid transparent; color: var(--color-fg-muted); padding: var(--cds-pad-xs) var(--cds-pad-sm); cursor: pointer; white-space: nowrap; }
+.lx-tab[aria-selected="true"] { color: var(--color-fg); border-bottom-color: var(--color-fg); font-weight: var(--cds-font-weight-medium); }
+.lx-tab:focus-visible, .lx-chip:focus-visible, .lx-card-btn:focus-visible { outline: 2px solid var(--color-fg); outline-offset: 2px; }
+.lx-card { background: var(--color-panel); border: 1px solid var(--color-border-line); border-radius: var(--cds-radius); padding: var(--cds-pad-lg); min-width: 0; display: flex; flex-direction: column; gap: var(--cds-gap-sm); }
+.lx-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 20rem), 1fr)); gap: var(--cds-gap-md); }
+.lx-tiles { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 9.5rem), 1fr)); gap: var(--cds-gap-sm); }
+.lx-tile { background: var(--color-panel); border: 1px solid var(--color-border-line); border-radius: var(--cds-radius); padding: var(--cds-pad-md); display: flex; flex-direction: column; gap: var(--cds-gap-xs); }
+.lx-tile span { font-size: var(--cds-font-size-caption); color: var(--color-fg-muted); }
+.lx .lx-num { font-family: var(--font-serif); font-weight: 400; font-size: var(--cds-font-size-title); font-variant-numeric: tabular-nums; }
+.lx-filters { display: flex; flex-wrap: wrap; gap: var(--cds-gap-xs); align-items: center; }
+.lx-filters input, .lx-filters select, .lx-in { font: inherit; font-size: var(--cds-font-size-caption); padding: var(--cds-pad-xs) var(--cds-pad-sm); border: 1px solid var(--color-border-line); border-radius: var(--cds-radius); background: var(--color-bg); color: var(--color-fg); min-width: 0; }
+.lx-filters input[type="search"] { flex: 1 1 12rem; }
+.lx-chips { display: flex; flex-wrap: wrap; gap: var(--cds-gap-xs); }
+.lx-chip { font: inherit; font-size: var(--cds-font-size-caption); border: 1px solid var(--color-border-line); background: var(--color-bg); color: var(--color-fg); border-radius: 999px; padding: 2px var(--cds-pad-sm); cursor: pointer; }
+.lx-chip[aria-pressed="true"] { background: var(--color-fg); color: var(--color-bg); border-color: var(--color-fg); }
+.lx-tag { display: inline-flex; align-items: center; font-size: var(--cds-font-size-caption); border: 1px solid var(--color-border-line); border-radius: 999px; padding: 0 var(--cds-pad-sm); white-space: nowrap; line-height: 1.6; }
+.lx-tag.lx-strong { font-weight: var(--cds-font-weight-medium); }
+.lx-rel-alta { color: var(--color-bad); border-color: currentColor; }
+.lx-rel-media { color: var(--color-warn); border-color: currentColor; }
+.lx-row { display: flex; flex-wrap: wrap; gap: var(--cds-gap-xs); align-items: center; }
+.lx-scroll { overflow: auto; max-height: 40rem; }
+.lx-table { width: 100%; border-collapse: collapse; font-size: var(--cds-font-size-caption); }
+.lx-table th { position: sticky; top: 0; z-index: 1; background: var(--color-panel); text-align: left; font-weight: var(--cds-font-weight-medium); color: var(--color-fg-muted); padding: var(--cds-pad-xs) var(--cds-pad-sm); border-bottom: 1px solid var(--color-border-line); white-space: nowrap; }
+.lx-table td { padding: var(--cds-pad-sm); border-bottom: 1px solid var(--color-border-line); vertical-align: top; }
+.lx-table td.lx-nw { white-space: nowrap; font-variant-numeric: tabular-nums; }
+.lx-b { font-weight: var(--cds-font-weight-medium); }
+.lx-sub { display: block; color: var(--color-fg-muted); margin-top: 2px; }
+.lx a { color: inherit; }
+.lx-src { display: flex; flex-wrap: wrap; gap: 2px var(--cds-gap-sm); font-size: var(--cds-font-size-caption); color: var(--color-fg-muted); }
+.lx-feed { display: flex; flex-direction: column; }
+.lx-item { display: grid; grid-template-columns: 6.5rem 1fr; gap: var(--cds-gap-sm); padding: var(--cds-pad-sm) 0; border-bottom: 1px solid var(--color-border-line); }
+.lx-item:last-child { border-bottom: 0; }
+.lx-item > div { min-width: 0; display: flex; flex-direction: column; gap: 4px; }
+.lx-when { font-size: var(--cds-font-size-caption); color: var(--color-fg-muted); font-variant-numeric: tabular-nums; }
+.lx-day { font-size: var(--cds-font-size-caption); text-transform: uppercase; letter-spacing: .05em; color: var(--color-fg-muted); padding-top: var(--cds-pad-md); }
+.lx-kv { display: grid; grid-template-columns: minmax(8rem, 12rem) 1fr; gap: 4px var(--cds-gap-md); font-size: var(--cds-font-size-caption); }
+.lx-kv dt { color: var(--color-fg-muted); }
+.lx-kv dd { margin: 0; min-width: 0; }
+.lx-card-btn { font: inherit; text-align: left; color: inherit; cursor: pointer; }
+.lx-card-btn:hover { border-color: var(--color-fg-muted); }
+.lx-empty { color: var(--color-fg-muted); font-size: var(--cds-font-size-caption); padding: var(--cds-pad-sm) 0; }
+.lx-flag { font-size: var(--cds-font-size-caption); font-weight: var(--cds-font-weight-medium); color: var(--color-warn); }
+.lx-fail { display: flex; align-items: center; justify-content: center; gap: .4em; color: var(--color-fg-muted); font-size: var(--cds-font-size-caption); min-height: 6rem; }
+.lx-fail::before { content: ""; width: .375rem; height: .375rem; border-radius: 50%; background: var(--color-bad); }
+.lx-qs { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 15rem), 1fr)); gap: var(--cds-gap-sm); }
+.lx-qs .lx-card { padding: var(--cds-pad-md); }
+.lx-qs ul { margin: 0; padding-left: 1.1em; font-size: var(--cds-font-size-caption); }
+.lx-chartbox { position: relative; min-width: 0; }
+.lx-svg { display: block; overflow: visible; }
+.lx-svg text { fill: var(--color-fg-muted); font-size: 12px; font-family: var(--font-sans); }
+.lx-svg text.lx-val { fill: var(--color-fg); font-variant-numeric: tabular-nums; }
+.lx-tip { position: absolute; pointer-events: none; background: var(--cds-surface-popover); border: 1px solid var(--cds-border); border-radius: var(--cds-radius); box-shadow: var(--cds-shadow-popover); padding: var(--cds-pad-xs) var(--cds-pad-sm); font-size: var(--cds-font-size-caption); max-width: 18rem; z-index: 5; }
+.lx-tip b { display: block; color: var(--cds-text-secondary); font-weight: var(--cds-font-weight-medium); }
+.lx-legend { display: flex; flex-wrap: wrap; gap: 4px 14px; font-size: var(--cds-font-size-caption); color: var(--color-fg-muted); }
+.lx-sw { display: inline-block; width: 10px; height: 10px; border-radius: 3px; margin-right: 5px; vertical-align: -1px; }
+.lx-sw.lx-dash { background: transparent !important; border: 2px dashed var(--color-fg-muted); width: 8px; height: 8px; }
+.lx-map-group { display: flex; flex-direction: column; gap: var(--cds-gap-xs); }
+.lx-map { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 8.25rem), 1fr)); gap: 6px; }
+.lx-tilebtn { font: inherit; text-align: left; color: var(--color-fg); border: 1px solid var(--lx-c); background: color-mix(in srgb, var(--lx-c) 24%, var(--color-panel)); border-radius: var(--cds-radius); padding: 6px 8px; cursor: pointer; display: flex; flex-direction: column; gap: 2px; min-height: 4.4rem; min-width: 0; }
+.lx-tilebtn:hover { background: color-mix(in srgb, var(--lx-c) 40%, var(--color-panel)); }
+.lx-tilebtn:focus-visible { outline: 2px solid var(--color-fg); outline-offset: 2px; }
+.lx-tilebtn.lx-saida { border: 2px dashed var(--color-fg-muted); }
+.lx-tilebtn .lx-sig { font-weight: var(--cds-font-weight-medium); }
+.lx-tilebtn .lx-occ, .lx-tilebtn .lx-stg { font-size: 11px; color: var(--color-fg-muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.lx-grid2 { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 24rem), 1fr)); gap: var(--cds-gap-md); }
+.lx-read { display: flex; flex-direction: column; gap: var(--cds-gap-sm); }
+.lx-read details { border-bottom: 1px solid var(--color-border-line); padding-bottom: var(--cds-pad-sm); }
+.lx-read summary { cursor: pointer; font-weight: var(--cds-font-weight-medium); }
+.lx-read ul { margin: var(--cds-gap-xs) 0 0; padding-left: 0; list-style: none; display: flex; flex-direction: column; gap: 6px; font-size: var(--cds-font-size-caption); }
+.lx-read li { display: grid; grid-template-columns: 7.5rem 1fr; gap: var(--cds-gap-sm); }
+.lx-read li > div { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.lx-kind { font-size: 11px; letter-spacing: .05em; font-weight: var(--cds-font-weight-medium); border-radius: 4px; padding: 1px 6px; align-self: start; justify-self: start; border: 1px solid var(--color-border-line); }
+.lx-kind.k-fato { border-color: var(--color-ok); color: var(--color-ok); }
+.lx-kind.k-sinal { border-color: var(--color-warn); color: var(--color-warn); }
+.lx-kind.k-int { border-style: dashed; color: var(--color-fg-muted); }
+.lx-person { display: grid; grid-template-columns: 5rem 1fr; gap: var(--cds-gap-md); align-items: start; }
+.lx-avatar { width: 5rem; height: 5rem; border-radius: 50%; background: var(--cds-chart-muted); display: flex; align-items: center; justify-content: center; font-family: var(--font-serif); font-size: 1.6rem; color: var(--color-fg); object-fit: cover; }
+.lx-plink { font: inherit; background: none; border: 0; padding: 0; color: inherit; cursor: pointer; text-decoration: underline; text-decoration-color: var(--color-border-line); text-underline-offset: 3px; font-weight: var(--cds-font-weight-medium); text-align: left; }
+.lx-plink:hover { text-decoration-color: currentColor; }
+.lx-plink:focus-visible { outline: 2px solid var(--color-fg); outline-offset: 2px; }
+@media (max-width: 640px) { .lx-read li { grid-template-columns: 1fr; } .lx-person { grid-template-columns: 1fr; } }
+[data-dash-source-state=refreshing] { opacity: .5; transition: opacity var(--cds-dur-slow); }
+@media (max-width: 640px) { .lx-hide-n { display: none; } .lx-item { grid-template-columns: 1fr; } .lx-kv { grid-template-columns: 1fr; } }
+
+</style>
+</head>
+<body>
+<div class="mast"><div class="mast-in">
+  <span class="mast-name">Tracker Lula 4</span>
+  <span class="mast-desc">Monitor da formação, da composição e das prioridades do 4º mandato</span>
+  <button class="mast-theme" id="theme-btn" type="button" aria-label="Alternar tema claro ou escuro">Tema</button>
+</div></div>
+<main class="wrap">
+
+
+<div class="lx" id="topo">
+  <header>
+    <h1>Formação e prioridades do governo Lula 4</h1>
+    <div class="lx-meta lx-muted" id="lx-meta" data-source="t_checagem">
+      <span>Última checagem automática: <b id="lx-ult" class="dash-skeleton">—</b></span>
+      <span>Próxima checagem: <b id="lx-prox" class="dash-skeleton">—</b></span>
+      <span>Checagens a cada 3 horas; o painel só muda quando há informação nova.</span>
+    </div>
+  </header>
+
+  <nav class="lx-tabs" role="tablist" aria-label="Módulos do tracker" id="lx-tabs"></nav>
+
+  <div class="lx-filters" id="lx-filterbar">
+    <input type="search" id="f-q" placeholder="Buscar nome, cargo, partido, tema, fonte…" aria-label="Busca geral">
+    <select id="f-orgao" aria-label="Órgão"></select>
+    <select id="f-partido" aria-label="Partido"></select>
+    <select id="f-status" aria-label="Status"></select>
+    <select id="f-area" aria-label="Tema ou área"></select>
+    <select id="f-conf" aria-label="Nível de confirmação"></select>
+    <select id="f-eixo" aria-label="Tipo de informação"></select>
+    <input type="date" id="f-desde" min="2026-01-01" max="2031-12-31" aria-label="Alterações desde">
+    <button class="lx-chip" id="f-limpar" type="button">Limpar filtros</button>
+  </div>
+  <div class="lx-chips" id="lx-quick" aria-label="Atalhos de filtro"></div>
+
+  <section id="inicio" data-pane="inicio" class="lx" hidden>
+    <div class="lx-card" id="novidades" data-source="t_evento t_checagem">
+      <h2>Novidades desde a última checagem</h2>
+      <p class="lx-muted" id="nov-sub"></p>
+      <div id="nov-list" class="lx-feed"></div>
+    </div>
+    <div class="lx-card" id="leitura" data-source="t_leitura">
+      <h2>Leitura da montagem e das prioridades do governo</h2>
+      <p class="lx-muted">Só mudanças relevantes observadas. <b>Fato</b> é o que está registrado ou confirmado; <b>sinal</b>, o que as fontes indicam sem decisão; <b>interpretação</b>, leitura analítica a confirmar. Especulação não entra como conclusão.</p>
+      <div class="lx-read" id="leit-list"></div>
+    </div>
+    <div class="lx-tiles" id="indicadores">
+      <div class="lx-tile"><span>Ministérios definidos</span><b class="lx-num dash-skeleton" data-source="indicadores" data-field="definidos" data-row="0">—</b></div>
+      <div class="lx-tile"><span>Ministérios em negociação</span><b class="lx-num dash-skeleton" data-source="indicadores" data-field="em_negociacao" data-row="0">—</b></div>
+      <div class="lx-tile"><span>Nomes em consideração</span><b class="lx-num dash-skeleton" data-source="indicadores" data-field="em_consideracao" data-row="0">—</b></div>
+      <div class="lx-tile"><span>Saídas confirmadas</span><b class="lx-num dash-skeleton" data-source="indicadores" data-field="saidas" data-row="0">—</b></div>
+      <div class="lx-tile"><span>Cargos estratégicos em aberto</span><b class="lx-num dash-skeleton" data-source="indicadores" data-field="abertos" data-row="0">—</b></div>
+      <div class="lx-tile"><span>Mudanças administrativas</span><b class="lx-num dash-skeleton" data-source="indicadores" data-field="admin" data-row="0">—</b></div>
+      <div class="lx-tile"><span>Políticas em revisão</span><b class="lx-num dash-skeleton" data-source="indicadores" data-field="revisao" data-row="0">—</b></div>
+      <div class="lx-tile"><span>Novas políticas anunciadas</span><b class="lx-num dash-skeleton" data-source="indicadores" data-field="novas" data-row="0">—</b></div>
+      <div class="lx-tile"><span>Promessas em acompanhamento</span><b class="lx-num dash-skeleton" data-source="indicadores" data-field="promessas" data-row="0">—</b></div>
+      <div class="lx-tile"><span>Promessas em implementação</span><b class="lx-num dash-skeleton" data-source="indicadores" data-field="promessas_impl" data-row="0">—</b></div>
+    </div>
+    <div class="lx-card" id="mapa">
+      <h2>Mapa da Esplanada</h2>
+      <p class="lx-muted">Cada bloco é um órgão. A cor mostra até onde avançou o nome mais adiantado para o comando; a borda tracejada marca titular com saída mencionada, em negociação ou confirmada. Clique para abrir o órgão.</p>
+      <div class="lx-legend" id="mapa-leg"></div>
+      <div id="mapa-box" class="lx" data-source="g_esplanada"></div>
+    </div>
+    <div class="lx-grid2">
+      <div class="lx-card" id="funil">
+        <h2>Funil dos nomes</h2>
+        <p class="lx-muted">Quantos nomes estão em cada etapa, da menção à nomeação, e quantos já saíram da disputa.</p>
+        <div class="lx-chartbox" id="funil-box" data-source="g_funil" style="min-height: 300px"></div>
+      </div>
+      <div class="lx-card" id="ritmo">
+        <h2>Ritmo da montagem</h2>
+        <p class="lx-muted">Movimentações registradas por dia, por relevância.</p>
+        <div class="lx-legend" id="ritmo-leg"></div>
+        <div class="lx-chartbox" id="ritmo-box" data-source="g_ritmo" style="min-height: 240px"></div>
+      </div>
+    </div>
+    <div class="lx-card" id="consolidado" data-source="t_consolidado">
+      <div class="lx-row" style="justify-content: space-between"><h2>Consolidado do dia</h2><select class="lx-in" id="cons-dia" aria-label="Dia do consolidado"></select></div>
+      <p class="lx-muted" id="cons-tit"></p>
+      <p id="cons-leit"></p>
+      <p class="lx-muted">O que acompanhar agora</p>
+      <p id="cons-acomp"></p>
+    </div>
+  </section>
+
+  <section id="composicao" data-pane="composicao" class="lx" hidden>
+    <div class="lx-card">
+      <h2>Composição ministerial</h2>
+      <p class="lx-muted">Uma linha por posição acompanhada. O status da posição é o do nome mais avançado; "Sem movimentação" quando não há nome nem sinal de troca.</p>
+      <div class="lx-scroll">
+        <table class="lx-table" id="tb-pos" data-source="t_posicao" data-row-key="id">
+          <thead><tr><th data-field="orgao_id">Órgão</th><th data-field="cargo">Cargo</th><th data-field="ocupante">Atual ocupante</th><th data-field="situacao_ocupante">Situação</th><th>Status da posição</th><th>Nomes</th><th data-field="proximo_movimento" class="lx-hide-n">Próximo movimento</th><th data-field="ultima_atualizacao">Atualizado</th></tr></thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </div>
+    <div class="lx-card">
+      <h2>Nomes em circulação</h2>
+      <p class="lx-muted">"Mencionado" quer dizer que o nome apareceu como possibilidade. "Em consideração" exige evidência de que Lula, o núcleo da montagem ou a direção partidária envolvida o avalia de fato. Probabilidades não são estimadas.</p>
+      <div class="lx-scroll">
+        <table class="lx-table" id="tb-nomes" data-source="t_nome" data-row-key="id">
+          <thead><tr><th data-field="nome">Nome</th><th data-field="posicao_id">Cargo em disputa</th><th data-field="status">Status</th><th data-field="confiabilidade" class="lx-hide-n">Confirmação</th><th data-field="vinculo" class="lx-hide-n">Partido / vínculo</th><th data-field="quem_articula" class="lx-hide-n">Quem apoia ou articula</th><th data-field="primeira_mencao">1ª menção</th><th data-field="ultima_atualizacao">Atualizado</th><th data-field="fontes" class="lx-hide-n">Fontes</th></tr></thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <section id="orgaos" data-pane="orgaos" class="lx" hidden>
+    <div class="lx-row"><label class="lx-muted" for="org-sel">Órgão</label><select class="lx-in" id="org-sel"></select><button class="lx-chip" type="button" id="org-voltar" hidden>Ver todos os órgãos</button></div>
+    <div id="org-list" class="lx-grid" data-source="t_orgao t_posicao t_nome"></div>
+    <div id="org-detail" class="lx" hidden data-source="t_orgao t_posicao t_nome t_politica t_evento"></div>
+  </section>
+
+  <section id="transicao" data-pane="transicao" class="lx" hidden>
+    <div class="lx-card">
+      <h2>Equipe de transição</h2>
+      <p class="lx-muted">Presidente reeleito não tem transição formal (Lei 10.609/2002). Este módulo registra quem conduz na prática a preparação do novo mandato e sinaliza "TRANSIÇÃO → POSSÍVEL NOMEAÇÃO" quando um integrante passa a ser considerado para um cargo.</p>
+      <div class="lx-scroll">
+        <table class="lx-table" id="tb-trans" data-source="t_transicao" data-row-key="id">
+          <thead><tr><th data-field="nome">Nome</th><th data-field="funcao">Função</th><th data-field="area" class="lx-hide-n">Área</th><th data-field="vinculo" class="lx-hide-n">Vínculo</th><th data-field="responsabilidade" class="lx-hide-n">Responsabilidade</th><th data-field="status">Status</th><th data-field="ultimo_movimento">Último movimento</th><th data-field="fontes" class="lx-hide-n">Fonte</th></tr></thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <section id="politica-partidaria" data-pane="politica-partidaria" class="lx" hidden>
+    <div class="lx-card" id="partidos-graf">
+      <h2>Presença dos partidos</h2>
+      <p class="lx-muted">Titulares filiados hoje e nomes do partido em circulação (mencionados a nomeados). Filiação não significa controle do órgão.</p>
+      <div class="lx-legend" id="part-leg"></div>
+      <div class="lx-chartbox" id="part-box" data-source="g_partidos" style="min-height: 280px"></div>
+    </div>
+    <div class="lx-card" id="balanco" data-source="t_balanco">
+      <h2>Balanço de forças do governo</h2>
+      <p class="lx-muted">Leitura consolidada a partir das movimentações registradas. Filiação de um indicado não significa que o partido controla o órgão.</p>
+      <div id="bal-list" class="lx-grid"></div>
+    </div>
+    <div class="lx-card">
+      <h2>Partidos</h2>
+      <div class="lx-scroll">
+        <table class="lx-table" id="tb-part" data-source="t_partido" data-row-key="id">
+          <thead><tr><th data-field="partido">Partido</th><th data-field="ministerios">Espaço atual</th><th data-field="reivindica">Reivindica</th><th data-field="negociacoes" class="lx-hide-n">Negociações</th><th data-field="articuladores" class="lx-hide-n">Articuladores</th><th data-field="relacao_congresso" class="lx-hide-n">Congresso</th><th data-field="situacao">Situação</th><th data-field="tendencia">Tendência</th><th data-field="ultima_atualizacao">Atualizado</th></tr></thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <section id="politicas" data-pane="politicas" class="lx" hidden>
+    <div class="lx-grid2">
+      <div class="lx-card" id="pol-tipo">
+        <h2>O que o governo pretende fazer</h2>
+        <p class="lx-muted">Itens por tipo de movimentação.</p>
+        <div class="lx-chartbox" id="poltipo-box" data-source="g_pol_tipo" style="min-height: 260px"></div>
+      </div>
+      <div class="lx-card" id="pol-etapa">
+        <h2>Em que etapa estão</h2>
+        <p class="lx-muted">Itens por status, do anúncio à implementação.</p>
+        <div class="lx-chartbox" id="poletapa-box" data-source="g_pol_status" style="min-height: 260px"></div>
+      </div>
+    </div>
+    <div class="lx-qs" id="pol-qs" data-source="t_politica"></div>
+    <div class="lx-card">
+      <h2>Prioridades, propostas e políticas públicas</h2>
+      <p class="lx-muted">Discurso é sinalização; promessa é compromisso; proposta está em debate; decisão é escolha tomada; ação, implementação e entrega são execução. Declaração presidencial nunca conta como política implementada.</p>
+      <div class="lx-scroll">
+        <table class="lx-table" id="tb-pol" data-source="t_politica" data-row-key="id">
+          <thead><tr><th data-field="tema">Tema</th><th data-field="area">Área</th><th data-field="tipo_mov">Tipo</th><th data-field="natureza" class="lx-hide-n">Natureza</th><th data-field="status">Status</th><th data-field="mudanca_vs_anterior" class="lx-hide-n">Mudança em relação ao modelo anterior</th><th data-field="orgao_id" class="lx-hide-n">Órgão / responsável</th><th data-field="proxima_etapa" class="lx-hide-n">Próxima etapa</th><th data-field="ultima_atualizacao">Atualizado</th><th data-field="fontes" class="lx-hide-n">Fontes</th></tr></thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <section id="reestruturacao" data-pane="reestruturacao" class="lx" hidden>
+    <div id="re-list" class="lx-grid" data-source="t_reestr"></div>
+  </section>
+
+  <section id="linha-do-tempo" data-pane="linha-do-tempo" class="lx" hidden>
+    <div class="lx-card">
+      <h2>Ritmo da montagem</h2>
+      <div class="lx-legend" id="ritmo2-leg"></div>
+      <div class="lx-chartbox" id="ritmo2-box" data-source="g_ritmo" style="min-height: 240px"></div>
+    </div>
+    <div class="lx-card" data-source="t_evento">
+      <h2>Linha do tempo</h2>
+      <p class="lx-muted">Formação do governo, reorganização administrativa, mudanças de poder e evolução das políticas, em ordem cronológica inversa.</p>
+      <div id="tl-list" class="lx-feed"></div>
+    </div>
+  </section>
+
+  <section id="pessoas" data-pane="pessoas" class="lx" hidden>
+    <div class="lx-card" data-source="t_pessoa t_nome t_posicao t_transicao t_evento t_politica">
+      <h2>Busca por pessoa</h2>
+      <div class="lx-row"><input class="lx-in" id="ps-q" list="ps-list" placeholder="Digite um nome" aria-label="Nome da pessoa" style="flex: 1 1 16rem"><datalist id="ps-list"></datalist></div>
+      <div id="ps-out" class="lx"></div>
+    </div>
+  </section>
+</div>
+
+
+</main>
+<footer class="foot"><div class="foot-in">
+  <span>Atualização automática a cada 3 horas a partir do Diário Oficial da União, do Planalto, dos ministérios e da imprensa nacional. Cada registro indica a fonte e o nível de confirmação.</span>
+  <span>Probabilidades não são estimadas. Nome mencionado não equivale a nome em consideração.</span>
+</div></footer>
+
+<script>
+window.dash = (() => {
+  const calcs = []; const results = {}; const subs = []; let base = null; let status = 'loading';
+  const api = {
+    colors: ['var(--s1)', 'var(--s2)'],
+    calc(id, def) { calcs.push({ id, inputs: def.inputs, fn: def.fn }); },
+    data(id) {
+      if (status === 'error') return { status: 'error', data: [], message: 'Falha ao carregar' };
+      if (status !== 'ok') return { status: 'loading', data: [] };
+      if (id === 'base') return { status: 'ok', data: base };
+      return id in results ? { status: 'ok', data: results[id] } : { status: 'missing', data: [] };
+    },
+    onData(fn) { subs.push(fn); try { fn(); } catch (e) { console.error(e); } },
+    setLink(name) { try { history.replaceState(null, '', '#' + name); } catch (e) {} },
+    refresh() {},
+    _emit() { subs.forEach((f) => { try { f(); } catch (e) { console.error(e); } }); },
+    _load(rows) {
+      base = rows;
+      for (const c of calcs) { try { results[c.id] = c.fn(...c.inputs.map((i) => (i === 'base' ? base : results[i] || []))); } catch (e) { console.error(c.id, e); results[c.id] = []; } }
+      status = 'ok'; api._emit();
+    },
+    _fail() { status = 'error'; api._emit(); },
+  };
+  return api;
+})();
+</script>
+<script>
+dash.calc('base_n', {
+  inputs: ['base'],
+  title: 'Base normalizada',
+  description: 'Converte campos aninhados (fontes, órgãos afetados, relatório) de texto JSON para objetos e os campos sim/não para booleanos.',
+  fn: (base) => base.map((r) => {
+    const o = { ...r };
+    for (const k of ['fontes', 'orgaos_afetados', 'relatorio', 'relatorio_historico', 'relacionamentos', 'itens']) if (typeof o[k] === 'string') { try { o[k] = JSON.parse(o[k]); } catch (e) { o[k] = null; } }
+    for (const k of ['promessa', 'transicao', 'flag_nomeacao']) o[k] = o[k] === true || o[k] === 'true';
+    if (o.novidades != null) o.novidades = Number(o.novidades);
+    return o;
+  }),
+});
+dash.calc('t_posicao', { inputs: ['base_n'], title: 'Posições acompanhadas', description: 'Linhas da base com tabela = posicao.', fn: (base_n) => base_n.filter((r) => r.tabela === 'posicao') });
+dash.calc('t_nome', { inputs: ['base_n'], title: 'Nomes em circulação', description: 'Linhas da base com tabela = nome.', fn: (base_n) => base_n.filter((r) => r.tabela === 'nome') });
+dash.calc('t_evento', { inputs: ['base_n'], title: 'Linha do tempo', description: 'Linhas da base com tabela = evento.', fn: (base_n) => base_n.filter((r) => r.tabela === 'evento') });
+dash.calc('t_politica', { inputs: ['base_n'], title: 'Políticas e prioridades', description: 'Linhas da base com tabela = politica.', fn: (base_n) => base_n.filter((r) => r.tabela === 'politica') });
+dash.calc('t_reestr', { inputs: ['base_n'], title: 'Reestruturação administrativa', description: 'Linhas da base com tabela = reestruturacao.', fn: (base_n) => base_n.filter((r) => r.tabela === 'reestruturacao') });
+dash.calc('t_partido', { inputs: ['base_n'], title: 'Partidos', description: 'Linhas da base com tabela = partido.', fn: (base_n) => base_n.filter((r) => r.tabela === 'partido') });
+dash.calc('t_balanco', { inputs: ['base_n'], title: 'Balanço de forças', description: 'Linhas da base com tabela = balanco.', fn: (base_n) => base_n.filter((r) => r.tabela === 'balanco') });
+dash.calc('t_transicao', { inputs: ['base_n'], title: 'Equipe de transição', description: 'Linhas da base com tabela = transicao.', fn: (base_n) => base_n.filter((r) => r.tabela === 'transicao') });
+dash.calc('t_orgao', { inputs: ['base_n'], title: 'Órgãos e relatórios', description: 'Linhas da base com tabela = orgao.', fn: (base_n) => base_n.filter((r) => r.tabela === 'orgao') });
+dash.calc('t_pessoa', { inputs: ['base_n'], title: 'Perfis de pessoas', description: 'Linhas da base com tabela = pessoa.', fn: (base_n) => base_n.filter((r) => r.tabela === 'pessoa') });
+dash.calc('t_leitura', { inputs: ['base_n'], title: 'Leitura política', description: 'Linhas da base com tabela = leitura.', fn: (base_n) => base_n.filter((r) => r.tabela === 'leitura') });
+dash.calc('t_checagem', { inputs: ['base_n'], title: 'Checagens automáticas', description: 'Linhas da base com tabela = checagem.', fn: (base_n) => base_n.filter((r) => r.tabela === 'checagem') });
+dash.calc('t_consolidado', { inputs: ['base_n'], title: 'Consolidados diários', description: 'Linhas da base com tabela = consolidado.', fn: (base_n) => base_n.filter((r) => r.tabela === 'consolidado') });
+dash.calc('indicadores', {
+  inputs: ['t_posicao', 't_nome', 't_orgao', 't_reestr', 't_politica'],
+  title: 'Indicadores da página inicial',
+  description: 'Contagens sobre posições titulares de ministérios e órgãos da Presidência, nomes, reestruturações e políticas.',
+  fn: (t_posicao, t_nome, t_orgao, t_reestr, t_politica) => {
+    const tipo = new Map(t_orgao.map((o) => [o.id, o.tipo]));
+    const minis = t_posicao.filter((p) => p.nivel === 'titular' && /Ministério|Presidência|status de ministério/.test(tipo.get(p.orgao_id) || '') && p.orgao_id !== 'presidencia' && p.orgao_id !== 'vice');
+    const nomesDe = (pid) => t_nome.filter((n) => n.posicao_id === pid);
+    const temSt = (pid, re) => nomesDe(pid).some((n) => re.test(n.status));
+    const definidos = minis.filter((p) => temSt(p.id, /ESCOLHA CONFIRMADA|NOMEADO/) || p.situacao_ocupante === 'Permanência confirmada').length;
+    const em_negociacao = minis.filter((p) => !temSt(p.id, /ESCOLHA CONFIRMADA|NOMEADO/) && (temSt(p.id, /NEGOCIAÇÃO|CONVITE/) || p.situacao_ocupante === 'Saída em negociação')).length;
+    const em_consideracao = t_nome.filter((n) => /EM CONSIDERAÇÃO/.test(n.status)).length;
+    const saidas = t_posicao.filter((p) => p.situacao_ocupante === 'Saída confirmada').length + t_nome.filter((n) => /SAÍDA CONFIRMADA/.test(n.status)).length;
+    const abertos = t_posicao.filter((p) => ['Saída mencionada', 'Saída em negociação', 'Saída confirmada', 'Vago', 'Pasta a criar'].includes(p.situacao_ocupante) && !temSt(p.id, /ESCOLHA CONFIRMADA|NOMEADO/)).length;
+    const admin = t_reestr.filter((r) => !/ABANDONADO/.test(r.status)).length;
+    const revisao = t_politica.filter((p) => ['REVISÃO', 'MUDANÇA DE POLÍTICA PÚBLICA', 'REDUÇÃO', 'ENCERRAMENTO'].includes(p.tipo_mov)).length;
+    const novas = t_politica.filter((p) => p.tipo_mov === 'NOVA POLÍTICA PÚBLICA').length;
+    const promessas = t_politica.filter((p) => p.promessa && !/ABANDONADO/.test(p.status)).length;
+    const promessas_impl = t_politica.filter((p) => p.promessa && /EM IMPLEMENTAÇÃO|IMPLEMENTADO/.test(p.status)).length;
+    return [{ definidos, em_negociacao, em_consideracao, saidas, abertos, admin, revisao, novas, promessas, promessas_impl }];
+  },
+});
+
+dash.calc('g_esplanada', {
+  inputs: ['t_posicao', 't_nome', 't_orgao'],
+  title: 'Mapa da Esplanada',
+  description: 'Para cada órgão, a etapa do nome mais avançado para o cargo titular e se o titular tem saída sinalizada.',
+  fn: (t_posicao, t_nome, t_orgao) => {
+    const ORDEM = ['✅ NOMEADO/OFICIALIZADO', '🟢 ESCOLHA CONFIRMADA', '🟣 CONVITE REPORTADO', '🟠 NEGOCIAÇÃO EM CURSO', '🟡 NOME EM CONSIDERAÇÃO', '🔵 NOME MENCIONADO'];
+    const fora = ['Pasta a definir', 'Indicação presidencial', 'Estrutura temporária'];
+    return t_orgao.filter((o) => !fora.includes(o.tipo)).map((o) => {
+      const p = t_posicao.find((x) => x.orgao_id === o.id && x.nivel === 'titular') || {};
+      const ns = t_nome.filter((n) => n.posicao_id === p.id);
+      const etapa = p.situacao_ocupante === 'Saída confirmada' ? '⬛ SAÍDA CONFIRMADA' : (ORDEM.find((s) => ns.some((n) => n.status === s)) || '⚪ SEM MOVIMENTAÇÃO');
+      const lider = ns.find((n) => n.status === etapa);
+      const grupo = o.tipo === 'Presidência' ? 'Núcleo do Planalto' : /Ministério|status de ministério/.test(o.tipo) ? 'Ministérios' : 'Bancos, estatais e autarquias';
+      return { orgao_id: o.id, sigla: o.sigla, orgao: o.nome, grupo, ocupante: p.ocupante || '—', situacao: p.situacao_ocupante || '—', etapa, saida: ['Saída mencionada', 'Saída em negociação', 'Saída confirmada'].includes(p.situacao_ocupante), nomes: ns.length, lider: lider ? lider.nome : '' };
+    });
+  },
+});
+dash.calc('g_funil', {
+  inputs: ['t_nome'],
+  title: 'Nomes por etapa',
+  description: 'Número de nomes em cada status, na ordem da menção à nomeação, mais os desfechos fora da disputa.',
+  fn: (t_nome) => ['🔵 NOME MENCIONADO', '🟡 NOME EM CONSIDERAÇÃO', '🟠 NEGOCIAÇÃO EM CURSO', '🟣 CONVITE REPORTADO', '🟢 ESCOLHA CONFIRMADA', '✅ NOMEADO/OFICIALIZADO', '🔴 DESCARTADO', '↩ RECUSOU', '⬛ SAÍDA CONFIRMADA'].map((status, ordem) => ({ status, ordem, n: t_nome.filter((x) => x.status === status).length })),
+});
+dash.calc('g_ritmo', {
+  inputs: ['t_evento'],
+  title: 'Movimentações por dia',
+  description: 'Eventos da linha do tempo por dia em que o fato ocorreu (horário de Brasília) e por relevância.',
+  fn: (t_evento) => {
+    const m = new Map();
+    for (const e of t_evento) { const dia = String(e.data).slice(0, 10); const k = dia + '|' + e.relevancia; m.set(k, (m.get(k) || 0) + 1); }
+    return [...m].map(([k, n]) => ({ dia: k.split('|')[0], relevancia: k.split('|')[1], n })).sort((a, b) => (a.dia < b.dia ? -1 : 1));
+  },
+});
+dash.calc('g_partidos', {
+  inputs: ['t_posicao', 't_nome'],
+  title: 'Presença por partido',
+  description: 'Titulares filiados a cada partido e nomes do partido com status ativo (mencionado a nomeado).',
+  fn: (t_posicao, t_nome) => {
+    const ativo = /MENCIONADO|CONSIDERAÇÃO|NEGOCIAÇÃO|CONVITE|CONFIRMADA|NOMEADO/;
+    const m = new Map(); const get = (p) => { if (!m.has(p)) m.set(p, { partido: p, titulares: 0, nomes: 0 }); return m.get(p); };
+    t_posicao.filter((p) => p.nivel === 'titular' && p.partido_ocupante && p.partido_ocupante !== '—').forEach((p) => { get(p.partido_ocupante).titulares += 1; });
+    t_nome.filter((n) => ativo.test(n.status) && n.partido && n.partido !== '—').forEach((n) => { get(n.partido).nomes += 1; });
+    return [...m.values()].sort((a, b) => (b.titulares + b.nomes) - (a.titulares + a.nomes) || a.partido.localeCompare(b.partido, 'pt'));
+  },
+});
+dash.calc('g_pol_tipo', {
+  inputs: ['t_politica'],
+  title: 'Políticas por tipo',
+  description: 'Número de itens de prioridades e políticas por tipo de movimentação.',
+  fn: (t_politica) => ['CONTINUIDADE', 'EXPANSÃO', 'REVISÃO', 'MUDANÇA DE POLÍTICA PÚBLICA', 'NOVA POLÍTICA PÚBLICA', 'DIRETRIZ POLÍTICA', 'PROPOSTA', 'PROMESSA ELEITORAL', 'REDUÇÃO', 'ENCERRAMENTO'].map((tipo_mov) => ({ tipo_mov, n: t_politica.filter((p) => p.tipo_mov === tipo_mov).length })).filter((r) => r.n > 0),
+});
+dash.calc('g_pol_status', {
+  inputs: ['t_politica'],
+  title: 'Políticas por etapa',
+  description: 'Número de itens em cada status, com quantos são compromissos de campanha.',
+  fn: (t_politica) => ['⚪ ANUNCIADO', '🟡 EM FORMULAÇÃO', '🟠 EM NEGOCIAÇÃO', '🔵 EM IMPLEMENTAÇÃO', '🟢 IMPLEMENTADO', '⏸ SEM AVANÇO', '🔴 ABANDONADO/REVISTO'].map((status) => ({ status, n: t_politica.filter((p) => p.status === status).length, promessas: t_politica.filter((p) => p.status === status && p.promessa).length })),
+});
+
+(() => {
+  const NOME_ST = ['⚪ SEM MOVIMENTAÇÃO', '🔵 NOME MENCIONADO', '🟡 NOME EM CONSIDERAÇÃO', '🟠 NEGOCIAÇÃO EM CURSO', '🟣 CONVITE REPORTADO', '🟢 ESCOLHA CONFIRMADA', '✅ NOMEADO/OFICIALIZADO', '🔴 DESCARTADO', '↩ RECUSOU', '⬛ SAÍDA CONFIRMADA'];
+  const ATIVO = ['✅ NOMEADO/OFICIALIZADO', '🟢 ESCOLHA CONFIRMADA', '🟣 CONVITE REPORTADO', '🟠 NEGOCIAÇÃO EM CURSO', '🟡 NOME EM CONSIDERAÇÃO', '🔵 NOME MENCIONADO'];
+  const POL_ST = ['⚪ ANUNCIADO', '🟡 EM FORMULAÇÃO', '🟠 EM NEGOCIAÇÃO', '🔵 EM IMPLEMENTAÇÃO', '🟢 IMPLEMENTADO', '🔴 ABANDONADO/REVISTO', '⏸ SEM AVANÇO'];
+  const CONF = ['OFICIAL', 'CONFIRMADO PELA IMPRENSA', 'NEGOCIAÇÃO', 'NOME EM CONSIDERAÇÃO', 'MENÇÃO', 'ESPECULAÇÃO'];
+  const EIXOS = ['Cargos', 'Transição', 'Composição política', 'Políticas', 'Reestruturação'];
+  const SCHEDULE_HOURS = [1, 4, 7, 10, 13, 16, 19, 22];
+  const SCHEDULE_MIN = 17;
+  const TABS = [['inicio', 'Início'], ['composicao', 'Composição ministerial'], ['orgaos', 'Órgãos'], ['transicao', 'Transição'], ['politica-partidaria', 'Composição política'], ['politicas', 'Prioridades e políticas públicas'], ['reestruturacao', 'Reestruturação administrativa'], ['linha-do-tempo', 'Linha do tempo'], ['pessoas', 'Busca por pessoa']];
+  const QUICK = [['desde-ontem', 'Alterações desde ontem'], ['confirmacoes', 'Somente confirmações'], ['abertos', 'Somente cargos em aberto'], ['consideracao', 'Somente nomes em consideração'], ['admin', 'Somente mudanças administrativas'], ['mudpol', 'Somente mudanças de políticas'], ['novas', 'Somente novas políticas'], ['promessas', 'Somente promessas em andamento']];
+  const QUICK_TAB = { confirmacoes: 'linha-do-tempo', abertos: 'composicao', consideracao: 'composicao', admin: 'reestruturacao', mudpol: 'politicas', novas: 'politicas', promessas: 'politicas' };
+
+  const tz = 'America/Sao_Paulo';
+  const fDT = new Intl.DateTimeFormat('pt-BR', { timeZone: tz, day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' });
+  const fD = new Intl.DateTimeFormat('pt-BR', { timeZone: tz, day: '2-digit', month: '2-digit', year: 'numeric' });
+  const fH = new Intl.DateTimeFormat('pt-BR', { timeZone: tz, hour: '2-digit', minute: '2-digit' });
+  const fDay = new Intl.DateTimeFormat('pt-BR', { timeZone: tz, weekday: 'long', day: '2-digit', month: 'long' });
+  const dt = (s) => { const d = new Date(s); return isNaN(d) ? (s || '—') : fDT.format(d).replace(',', ''); };
+  const dd = (s) => { const d = new Date(String(s).length === 10 ? s + 'T12:00:00-03:00' : s); return isNaN(d) ? (s || '—') : fD.format(d); };
+  const dayKey = (s) => { const d = new Date(s); if (isNaN(d)) return String(s).slice(0, 10); const p = new Intl.DateTimeFormat('en-CA', { timeZone: tz, year: 'numeric', month: '2-digit', day: '2-digit' }).format(d); return p; };
+
+  const el = (tag, cls, ...kids) => { const e = document.createElement(tag); if (cls) e.className = cls; for (const k of kids) { if (k == null || k === false) continue; e.append(k instanceof Node ? k : String(k)); } return e; };
+  const tag = (t, extra) => el('span', 'lx-tag' + (extra ? ' ' + extra : ''), t || '—');
+  const relTag = (r) => tag(r, /ALTA/.test(r) ? 'lx-rel-alta' : /MÉDIA/.test(r) ? 'lx-rel-media' : '');
+  const link = (texto, href) => (typeof href === 'string' && href.startsWith('https://')) ? Object.assign(el('a', '', texto || 'link'), { href, target: '_blank', rel: 'noopener' }) : el('span', '', texto || '');
+  const fontes = (arr) => el('span', 'lx-src', ...(Array.isArray(arr) ? arr : []).map((f) => link(`${f.v}${f.d ? ' (' + dd(f.d) + ')' : ''}`, f.u)));
+  const td = (cls, ...k) => el('td', cls, ...k);
+  const plink = (nome) => { const b = el('button', 'lx-plink', nome); b.type = 'button'; b.dataset.pessoa = nome; return b; };
+  const sub = (t) => t ? el('span', 'lx-sub', t) : null;
+  const rows = (id) => { const d = dash.data(id); return d.status === 'ok' ? d.data : null; };
+  const failed = (id) => dash.data(id).status === 'error';
+
+  // ---------- state ----------
+  const st = { tab: 'inicio', f: { q: '', orgao: '', partido: '', status: '', area: '', conf: '', eixo: '', desde: '' }, quick: '', org: '', cons: '', pessoa: '' };
+  const nav = document.getElementById('lx-tabs');
+  TABS.forEach(([id, label]) => {
+    const b = el('button', 'lx-tab', label); b.type = 'button'; b.setAttribute('role', 'tab'); b.dataset.tab = id;
+    b.addEventListener('click', () => { st.tab = id; dash.setLink(id); draw(); });
+    nav.append(b);
+  });
+  const quick = document.getElementById('lx-quick');
+  QUICK.forEach(([id, label]) => {
+    const b = el('button', 'lx-chip', label); b.type = 'button'; b.dataset.q = id; b.setAttribute('aria-pressed', 'false');
+    b.addEventListener('click', () => {
+      if (st.quick === id) { st.quick = ''; if (id === 'desde-ontem') st.f.desde = ''; }
+      else {
+        st.quick = id;
+        if (id === 'desde-ontem') { const y = new Date(Date.now() - 86400000); st.f.desde = new Intl.DateTimeFormat('en-CA', { timeZone: tz }).format(y); }
+        if (QUICK_TAB[id]) { st.tab = QUICK_TAB[id]; dash.setLink(st.tab); }
+      }
+      draw();
+    });
+    quick.append(b);
+  });
+  const fIds = { q: 'f-q', orgao: 'f-orgao', partido: 'f-partido', status: 'f-status', area: 'f-area', conf: 'f-conf', eixo: 'f-eixo', desde: 'f-desde' };
+  for (const [k, id] of Object.entries(fIds)) {
+    const node = document.getElementById(id);
+    node.addEventListener(k === 'q' ? 'input' : 'change', () => {
+      if (k === 'desde' && node.value && !node.validity.valid) return;
+      st.f[k] = k === 'q' ? node.value.trim().toLowerCase() : node.value; draw();
+    });
+  }
+  document.getElementById('f-limpar').addEventListener('click', () => { for (const k of Object.keys(st.f)) st.f[k] = ''; st.quick = ''; draw(); });
+  const named = TABS.find(([id]) => id === location.hash.slice(1)); if (named) st.tab = named[0];
+  window.addEventListener('hashchange', () => { const t = TABS.find(([id]) => id === location.hash.slice(1)); if (t && t[0] !== st.tab) { st.tab = t[0]; draw(); } });
+
+  const fillSel = (id, label, values) => {
+    const s = document.getElementById(id); const cur = s.value;
+    s.replaceChildren(new Option(label, ''), ...values.map((v) => Array.isArray(v) ? new Option(v[1], v[0]) : new Option(v, v)));
+    s.value = values.some((v) => (Array.isArray(v) ? v[0] : v) === cur) ? cur : '';
+  };
+
+  // ---------- filtros ----------
+  const hay = (...parts) => parts.flat().map((x) => typeof x === 'object' && x ? JSON.stringify(x) : String(x ?? '')).join(' ').toLowerCase();
+  const passDesde = (d) => !st.f.desde || dayKey(d) >= st.f.desde;
+  const okCommon = (o) => (!st.f.q || o.h.includes(st.f.q)) && (!st.f.orgao || o.orgao === st.f.orgao) && (!st.f.partido || (o.partido || '').includes(st.f.partido)) && (!st.f.status || o.status === st.f.status) && (!st.f.area || o.area === st.f.area) && (!st.f.conf || o.conf === st.f.conf) && (!st.f.eixo || o.eixo === st.f.eixo) && passDesde(o.data);
+
+  function posStatus(p, nomes) {
+    if (p.situacao_ocupante === 'Saída confirmada') return '⬛ SAÍDA CONFIRMADA';
+    const ns = nomes.filter((n) => n.posicao_id === p.id).map((n) => n.status);
+    for (const s of ATIVO) if (ns.includes(s)) return s;
+    return '⚪ SEM MOVIMENTAÇÃO';
+  }
+  const aberto = (p, nomes) => ['Saída mencionada', 'Saída em negociação', 'Saída confirmada', 'Vago', 'Pasta a criar'].includes(p.situacao_ocupante) && !nomes.some((n) => n.posicao_id === p.id && /ESCOLHA CONFIRMADA|NOMEADO/.test(n.status));
+
+  function nextCheck(checks) {
+    const last = checks.slice().sort((a, b) => (a.at < b.at ? 1 : -1))[0];
+    const now = new Date();
+    if (last && last.proxima && new Date(last.proxima) > now) return new Date(last.proxima);
+    const parts = Object.fromEntries(new Intl.DateTimeFormat('en-CA', { timeZone: tz, year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit', hourCycle: 'h23' }).formatToParts(now).map((x) => [x.type, x.value]));
+    const mins = (+parts.hour) * 60 + (+parts.minute);
+    const day = `${parts.year}-${parts.month}-${parts.day}`;
+    const h = SCHEDULE_HOURS.find((x) => x * 60 + SCHEDULE_MIN > mins);
+    if (h != null) return new Date(`${day}T${String(h).padStart(2, '0')}:${SCHEDULE_MIN}:00-03:00`);
+    const t = new Date(new Date(`${day}T12:00:00-03:00`).getTime() + 86400000);
+    const d2 = new Intl.DateTimeFormat('en-CA', { timeZone: tz }).format(t);
+    return new Date(`${d2}T${String(SCHEDULE_HOURS[0]).padStart(2, '0')}:${SCHEDULE_MIN}:00-03:00`);
+  }
+
+  // ---------- renderers ----------
+  const orgName = (orgaos, id) => (orgaos.find((o) => o.id === id) || {}).nome || id || '—';
+  const orgShort = (orgaos, id) => { const o = orgaos.find((x) => x.id === id); return o ? (o.sigla && o.sigla !== '—' ? o.sigla : o.nome) : (id || '—'); };
+
+  function evItem(e, orgaos, showDay) {
+    const meta = el('div', 'lx-row', relTag(e.relevancia), tag(e.eixo), tag(orgShort(orgaos, e.orgao_id)), tag(e.confiabilidade));
+    const mv = (e.de && e.de !== '—') || (e.para && e.para !== '—') ? el('span', 'lx-muted', `${e.de && e.de !== '—' ? e.de : '—'} → ${e.para && e.para !== '—' ? e.para : '—'}`) : null;
+    const it = el('div', 'lx-item', el('span', 'lx-when', showDay ? dt(e.data) : fH.format(new Date(e.data))), el('div', '', el('span', 'lx-b', e.titulo), mv, meta, el('span', 'lx-src', link(e.fonte, e.link))));
+    it.dataset.key = e.id; return it;
+  }
+
+  function drawInicio(ev, checks, orgaos) {
+    const list = document.getElementById('nov-list'); const subt = document.getElementById('nov-sub');
+    if (!ev || !checks) { if (failed('base')) list.replaceChildren(el('div', 'lx-fail', 'Failed to load')); return; }
+    const ord = checks.slice().sort((a, b) => (a.at < b.at ? 1 : -1));
+    const last = ord[0]; const withNews = ord.find((c) => ev.some((e) => e.registrado_em === c.at));
+    let shown = [];
+    if (last && ev.some((e) => e.registrado_em === last.at)) { shown = ev.filter((e) => e.registrado_em === last.at); subt.textContent = `Registradas na checagem de ${dt(last.at)}.`; }
+    else if (withNews) { shown = ev.filter((e) => e.registrado_em === withNews.at); subt.textContent = `A última checagem (${dt(last.at)}) não trouxe alterações. Abaixo, as novidades da checagem de ${dt(withNews.at)}.`; }
+    else subt.textContent = 'Nenhuma novidade registrada ainda.';
+    const rank = (r) => (/ALTA/.test(r) ? 0 : /MÉDIA/.test(r) ? 1 : 2);
+    shown.sort((a, b) => rank(a.relevancia) - rank(b.relevancia) || (a.data < b.data ? 1 : -1));
+    const LIM = 6; const extra = shown.length - LIM;
+    const items = shown.map((e) => evItem(e, orgaos, true));
+    if (extra > 0 && !st.novTodas) items.splice(LIM);
+    const more = extra > 0 ? Object.assign(el('button', 'lx-chip', st.novTodas ? 'Mostrar menos' : `Mostrar as outras ${extra}`), { type: 'button' }) : null;
+    if (more) more.addEventListener('click', () => { st.novTodas = !st.novTodas; draw(); });
+    list.replaceChildren(...(items.length ? items : [el('p', 'lx-empty', 'Sem itens.')]), ...(more ? [el('div', 'lx-row', more)] : []));
+
+    const cons = rows('t_consolidado');
+    if (cons) {
+      const dias = cons.map((c) => c.data).sort().reverse();
+      if (!st.cons || !dias.includes(st.cons)) st.cons = dias[0] || '';
+      const s = document.getElementById('cons-dia'); s.replaceChildren(...dias.map((d) => new Option(dd(d), d))); s.value = st.cons;
+      const c = cons.find((x) => x.data === st.cons) || {};
+      document.getElementById('cons-tit').textContent = c.titulo ? `${c.titulo} · ${c.movimentacoes ?? 0} movimentação(ões) registrada(s)` : '';
+      document.getElementById('cons-leit').textContent = c.leitura || '—';
+      document.getElementById('cons-acomp').textContent = c.acompanhar || '—';
+    }
+    const ind = rows('indicadores');
+    document.querySelectorAll('#indicadores .lx-num').forEach((n) => { if (ind && ind[0]) { n.classList.remove('dash-skeleton'); n.textContent = String(ind[0][n.dataset.field]); } else if (failed('base')) { n.classList.remove('dash-skeleton'); n.textContent = '—'; } });
+  }
+  document.getElementById('cons-dia').addEventListener('change', (e) => { st.cons = e.target.value; draw(); });
+
+  function drawComposicao(pos, nomes, orgaos) {
+    const tb = document.querySelector('#tb-pos tbody'); const tn = document.querySelector('#tb-nomes tbody');
+    if (!pos || !nomes) { if (failed('base')) { tb.replaceChildren(); tn.replaceChildren(); } return; }
+    const oa = (id) => orgaos.find((o) => o.id === id) || {};
+    let P = pos.map((p) => ({ p, s: posStatus(p, nomes) }));
+    P = P.filter(({ p, s }) => okCommon({ h: hay(p, orgName(orgaos, p.orgao_id), nomes.filter((n) => n.posicao_id === p.id).map((n) => n.nome)), orgao: p.orgao_id, partido: [p.partido_ocupante, ...nomes.filter((n) => n.posicao_id === p.id).map((n) => n.partido)].join(' '), status: s, area: oa(p.orgao_id).area, conf: '', eixo: '', data: p.ultima_atualizacao }) || (st.f.status && nomes.some((n) => n.posicao_id === p.id && n.status === st.f.status) && !st.f.q && !st.f.orgao));
+    if (st.f.conf || st.f.eixo) P = P.filter(({ p }) => nomes.some((n) => n.posicao_id === p.id && (!st.f.conf || n.confiabilidade === st.f.conf)) && (!st.f.eixo || st.f.eixo === 'Cargos'));
+    if (st.quick === 'abertos') P = P.filter(({ p }) => aberto(p, nomes));
+    if (st.quick === 'consideracao') P = P.filter(({ p }) => nomes.some((n) => n.posicao_id === p.id && /EM CONSIDERAÇÃO/.test(n.status)));
+    const rank = (s) => { const i = ATIVO.indexOf(s); return s.startsWith('⬛') ? -1 : i < 0 ? 99 : i; };
+    P.sort((a, b) => rank(a.s) - rank(b.s) || (b.p.ultima_atualizacao > a.p.ultima_atualizacao ? 1 : -1));
+    tb.replaceChildren(...P.map(({ p, s }) => {
+      const tr = el('tr'); tr.dataset.key = p.id;
+      const ns = nomes.filter((n) => n.posicao_id === p.id);
+      const chips = el('div', 'lx-row', ...ns.map((n) => tag(`${n.nome} · ${n.status}`)));
+      tr.append(td('', el('span', 'lx-b', orgShort(orgaos, p.orgao_id)), sub(oa(p.orgao_id).tipo)), td('', p.cargo), td('', /^(A verificar|—)$/.test(p.ocupante) ? el('span', 'lx-b', p.ocupante) : plink(p.ocupante), sub(p.partido_ocupante && p.partido_ocupante !== '—' ? p.partido_ocupante : ''), sub(p.ocupante_ref)), td('', p.situacao_ocupante, sub(p.nota)), td('', tag(s, 'lx-strong')), td('', ns.length ? chips : el('span', 'lx-muted', '—')), td('lx-hide-n', p.proximo_movimento || '—'), td('lx-nw', dt(p.ultima_atualizacao)));
+      return tr;
+    }));
+    let N = nomes.filter((n) => okCommon({ h: hay(n, orgName(orgaos, n.orgao_id)), orgao: n.orgao_id, partido: n.partido + ' ' + n.vinculo, status: n.status, area: oa(n.orgao_id).area, conf: n.confiabilidade, eixo: st.f.eixo ? 'Cargos' : '', data: n.ultima_atualizacao }));
+    if (st.quick === 'consideracao') N = N.filter((n) => /EM CONSIDERAÇÃO/.test(n.status));
+    if (st.quick === 'abertos') N = N.filter((n) => { const p = pos.find((x) => x.id === n.posicao_id); return p && aberto(p, nomes); });
+    N.sort((a, b) => ATIVO.indexOf(a.status) - ATIVO.indexOf(b.status) || (b.ultima_atualizacao > a.ultima_atualizacao ? 1 : -1));
+    tn.replaceChildren(...N.map((n) => {
+      const p = pos.find((x) => x.id === n.posicao_id) || {};
+      const tr = el('tr'); tr.dataset.key = n.id;
+      tr.append(td('', plink(n.nome), sub(n.cargo_atual), n.transicao ? el('span', 'lx-flag', 'TRANSIÇÃO → POSSÍVEL NOMEAÇÃO') : null), td('', p.cargo || '—', sub(orgShort(orgaos, n.orgao_id))), td('', tag(n.status, 'lx-strong'), sub(n.nota)), td('lx-hide-n', n.confiabilidade), td('lx-hide-n', n.partido && n.partido !== '—' ? n.partido : '', sub(n.vinculo)), td('lx-hide-n', n.quem_articula || '—', sub(n.fonte_articulacao)), td('lx-nw', dd(n.primeira_mencao)), td('lx-nw', dt(n.ultima_atualizacao), sub(n.proximo_movimento)), td('lx-hide-n', fontes(n.fontes)));
+      return tr;
+    }));
+  }
+
+  function drawOrgaos(orgaos, pos, nomes, pols, ev) {
+    const sel = document.getElementById('org-sel'); const list = document.getElementById('org-list'); const det = document.getElementById('org-detail'); const back = document.getElementById('org-voltar');
+    if (!orgaos || !pos || !nomes) { if (failed('base')) list.replaceChildren(el('div', 'lx-fail', 'Failed to load')); return; }
+    const ordem = ['Presidência', 'Ministério', 'Ministério a criar', 'Órgão com status de ministério', 'Autarquia', 'Banco público', 'Empresa estatal', 'Pasta a definir', 'Indicação presidencial', 'Estrutura temporária'];
+    const O = orgaos.slice().sort((a, b) => ordem.indexOf(a.tipo) - ordem.indexOf(b.tipo) || a.nome.localeCompare(b.nome, 'pt'));
+    sel.replaceChildren(new Option('Todos os órgãos', ''), ...O.map((o) => new Option(o.nome, o.id))); sel.value = st.org;
+    back.hidden = !st.org; list.hidden = !!st.org; det.hidden = !st.org;
+    if (!st.org) {
+      const cards = O.filter((o) => okCommon({ h: hay(o, pos.filter((p) => p.orgao_id === o.id), nomes.filter((n) => n.orgao_id === o.id).map((n) => n.nome)), orgao: o.id, partido: pos.filter((p) => p.orgao_id === o.id).map((p) => p.partido_ocupante).concat(nomes.filter((n) => n.orgao_id === o.id).map((n) => n.partido)).join(' '), status: '', area: o.area, conf: '', eixo: '', data: o.ultima_atualizacao })).map((o) => {
+        const tit = pos.find((p) => p.orgao_id === o.id && p.nivel === 'titular');
+        const s = tit ? posStatus(tit, nomes) : '⚪ SEM MOVIMENTAÇÃO';
+        const nn = nomes.filter((n) => n.orgao_id === o.id).length;
+        const b = el('button', 'lx-card lx-card-btn', el('div', 'lx-row', tag(o.tipo), tag(s, 'lx-strong')), el('h3', '', o.nome), el('span', 'lx-muted', tit ? `${tit.ocupante} · ${tit.situacao_ocupante}` : '—'), el('span', 'lx-muted', `${nn} nome(s) em circulação · atualizado ${dt(o.ultima_atualizacao)}`));
+        b.type = 'button'; b.dataset.key = o.id; b.addEventListener('click', () => { st.org = o.id; draw(); window.scrollTo({ top: 0 }); }); return b;
+      });
+      list.replaceChildren(...(cards.length ? cards : [el('p', 'lx-empty', 'Nenhum órgão com esses filtros.')]));
+      return;
+    }
+    const o = orgaos.find((x) => x.id === st.org); if (!o) { st.org = ''; return drawOrgaos(orgaos, pos, nomes, pols, ev); }
+    const P = pos.filter((p) => p.orgao_id === o.id); const tit = P.find((p) => p.nivel === 'titular'); const outros = P.filter((p) => p !== tit);
+    const N = nomes.filter((n) => n.orgao_id === o.id);
+    const PL = (pols || []).filter((p) => p.orgao_id === o.id);
+    const E = (ev || []).filter((e) => e.orgao_id === o.id).sort((a, b) => (a.data < b.data ? -1 : 1));
+    const kv = (pairs) => el('dl', 'lx-kv', ...pairs.flatMap(([k, v]) => [el('dt', '', k), el('dd', '', v instanceof Node ? v : (v || '—'))]));
+    const card = (title, ...kids) => el('div', 'lx-card', el('h2', '', title), ...kids);
+    const nomeTable = () => { const t = el('table', 'lx-table'); t.dataset.source = 't_nome'; t.dataset.rowKey = 'id'; const h = el('tr'); [['nome', 'Nome'], ['cargo_atual', 'Cargo atual'], ['vinculo', 'Partido / vínculo'], ['quem_articula', 'Quem articula'], ['status', 'Status'], ['fontes', 'Fonte'], ['ultima_atualizacao', 'Atualizado']].forEach(([f, l]) => { const th = el('th', '', l); th.dataset.field = f; h.append(th); }); t.append(el('thead', '', h)); const b = el('tbody'); N.forEach((n) => { const tr = el('tr'); tr.dataset.key = n.id; tr.append(td('', el('span', 'lx-b', n.nome)), td('', n.cargo_atual), td('', [n.partido, n.vinculo].filter((x) => x && x !== '—').join(' · ')), td('', n.quem_articula || '—'), td('', tag(n.status, 'lx-strong')), td('', fontes(n.fontes)), td('lx-nw', dt(n.ultima_atualizacao))); b.append(tr); }); t.append(b); t.querySelectorAll('tbody tr').forEach((r, i) => { r.firstChild.replaceChildren(plink(N[i].nome)); }); return el('div', 'lx-scroll', t); };
+    const groups = [['Prioridades atuais e políticas que continuam', ['CONTINUIDADE']], ['Novas prioridades e novas políticas', ['NOVA POLÍTICA PÚBLICA', 'DIRETRIZ POLÍTICA', 'PROPOSTA', 'PROMESSA ELEITORAL']], ['Ampliações', ['EXPANSÃO']], ['Revisões e mudanças', ['REVISÃO', 'MUDANÇA DE POLÍTICA PÚBLICA', 'REDUÇÃO', 'ENCERRAMENTO']]];
+    const polBlock = PL.length ? el('div', 'lx', ...groups.map(([g, tipos]) => { const it = PL.filter((p) => tipos.includes(p.tipo_mov)); return it.length ? el('div', '', el('h3', '', g), el('ul', '', ...it.map((p) => el('li', '', el('span', 'lx-b', p.tema), ` · ${p.status} · ${p.natureza}. `, el('span', 'lx-muted', p.mudanca_vs_anterior || ''))))) : null; })) : el('p', 'lx-empty', 'Nenhuma política vinculada a este órgão ainda.');
+    const rel = o.relatorio || {};
+    const mudou = E.filter((e) => !/BAIXA/.test(e.relevancia));
+    const relCard = card(`Relatório de alterações: ${o.nome}`,
+      el('h3', '', 'Situação anterior'), el('p', '', rel.situacao_anterior || (tit ? `${tit.ocupante} no cargo. ${tit.ocupante_ref || ''}` : '—')),
+      el('h3', '', 'O que mudou'), mudou.length ? el('ul', '', ...mudou.map((e) => el('li', '', `${dd(e.data)}: ${e.titulo} `, el('span', 'lx-muted', `(${e.confiabilidade})`)))) : el('p', 'lx-empty', 'Nenhuma alteração relevante registrada.'),
+      el('h3', '', 'Pessoas envolvidas'), el('ul', '', ...(tit ? [el('li', '', `${tit.ocupante}: ${tit.situacao_ocupante}`)] : []), ...N.map((n) => el('li', '', `${n.nome}: ${n.status}`))),
+      el('h3', '', 'Contexto político'), el('p', '', rel.contexto_politico || '—'),
+      el('h3', '', 'Mudanças de políticas públicas'), PL.length ? el('ul', '', ...PL.map((p) => el('li', '', `${p.tema}: ${p.tipo_mov.toLowerCase()} · ${p.status}`))) : el('p', 'lx-empty', '—'),
+      el('h3', '', 'Impacto institucional'), el('p', '', rel.impacto_institucional || '—'),
+      el('h3', '', 'Status atual'), el('p', '', rel.status_atual || (tit ? `${tit.ocupante} · ${posStatus(tit, nomes)}` : '—')),
+      el('h3', '', 'Pendências'), el('p', '', rel.pendencias || (tit && tit.proximo_movimento) || '—'),
+      (Array.isArray(o.relatorio_historico) && o.relatorio_historico.length) ? el('div', '', el('h3', '', 'Histórico do relatório'), el('ul', '', ...o.relatorio_historico.map((h) => el('li', '', `${dd(h.data)}: ${h.texto}`)))) : null,
+      el('p', 'lx-muted', `Última atualização: ${dt(o.ultima_atualizacao)}`));
+    det.replaceChildren(
+      el('div', '', el('div', 'lx-row', tag(o.tipo), tag(o.area)), el('h2', '', o.nome)),
+      card('Titular atual', tit ? kv([['Nome', el('span', 'lx-b', tit.ocupante)], ['Partido', tit.partido_ocupante], ['Situação', tit.situacao_ocupante], ['Status da posição', tag(posStatus(tit, nomes), 'lx-strong')], ['Referência', tit.ocupante_ref], ['Próximo movimento', tit.proximo_movimento], ['Observação', tit.nota]]) : el('p', 'lx-empty', 'Sem posição titular cadastrada.')),
+      card('Nomes para o órgão', N.length ? nomeTable() : el('p', 'lx-empty', 'Nenhum nome em circulação.')),
+      card('Principais cargos abaixo do titular', outros.length ? el('ul', '', ...outros.map((p) => el('li', '', `${p.cargo}: ${p.ocupante} (${p.situacao_ocupante})`))) : el('p', 'lx-empty', 'Ainda não mapeados. Secretarias-executivas, secretarias nacionais e entidades vinculadas entram aqui conforme surgirem movimentações.')),
+      card('Prioridades e políticas públicas', polBlock),
+      card('Alterações identificadas', E.length ? el('div', 'lx-feed', ...E.map((e) => evItem(e, orgaos, true))) : el('p', 'lx-empty', 'Nada registrado.')),
+      relCard);
+  }
+  document.getElementById('org-sel').addEventListener('change', (e) => { st.org = e.target.value; draw(); });
+  document.getElementById('org-voltar').addEventListener('click', () => { st.org = ''; draw(); });
+
+  function drawTransicao(tr) {
+    const tb = document.querySelector('#tb-trans tbody'); if (!tr) return;
+    const R = tr.filter((t) => okCommon({ h: hay(t), orgao: 'transicao', partido: t.vinculo, status: t.status, area: '', conf: t.status, eixo: 'Transição', data: t.data }) || (!st.f.q && !st.f.desde && !st.f.partido && !st.f.status && !st.f.conf && !st.f.area && (!st.f.eixo || st.f.eixo === 'Transição') && (!st.f.orgao || st.f.orgao === 'transicao')));
+    tb.replaceChildren(...R.map((t) => { const r = el('tr'); r.dataset.key = t.id; r.append(td('', el('span', 'lx-b', t.nome), t.flag_nomeacao ? el('span', 'lx-flag', 'TRANSIÇÃO → POSSÍVEL NOMEAÇÃO') : null), td('', t.funcao), td('lx-hide-n', t.area), td('lx-hide-n', t.vinculo, sub(t.quem_indicou && t.quem_indicou !== '—' ? 'Indicado por ' + t.quem_indicou : '')), td('lx-hide-n', t.responsabilidade), td('', tag(t.status)), td('', t.ultimo_movimento, sub(dt(t.data))), td('lx-hide-n', fontes(t.fontes))); return r; }));
+  }
+
+  function drawPartidos(parts, bal) {
+    const tb = document.querySelector('#tb-part tbody'); const bl = document.getElementById('bal-list');
+    if (bal) bl.replaceChildren(...bal.map((b) => { const c = el('div', 'lx-card', el('div', 'lx-row', el('h3', '', b.dimensao), tag(b.tendencia)), el('p', '', b.leitura), fontes(b.fontes), el('span', 'lx-muted', 'Atualizado ' + dt(b.ultima_atualizacao))); c.dataset.key = b.id; return c; }));
+    if (!parts) return;
+    const R = parts.filter((p) => okCommon({ h: hay(p), orgao: '', partido: p.partido, status: '', area: '', conf: '', eixo: '', data: p.ultima_atualizacao }) || false).filter(() => !st.f.orgao && !st.f.status && !st.f.area && !st.f.conf && (!st.f.eixo || st.f.eixo === 'Composição política'));
+    tb.replaceChildren(...R.map((p) => { const r = el('tr'); r.dataset.key = p.id; r.append(td('', el('span', 'lx-b', p.partido), sub(p.relacao_lula)), td('', p.ministerios, sub(p.espaco_atual), sub(p.outros_cargos && p.outros_cargos !== 'A levantar' ? 'Outros: ' + p.outros_cargos : '')), td('', p.reivindica), td('lx-hide-n', p.negociacoes), td('lx-hide-n', p.articuladores), td('lx-hide-n', p.relacao_congresso), td('', tag(p.situacao), sub(p.ultimo_movimento)), td('', p.tendencia), td('lx-nw', dt(p.ultima_atualizacao), fontes(p.fontes))); return r; }));
+  }
+
+  function drawPoliticas(pols, orgaos) {
+    const tb = document.querySelector('#tb-pol tbody'); const qs = document.getElementById('pol-qs'); if (!pols) return;
+    let R = pols.filter((p) => okCommon({ h: hay(p, orgName(orgaos, p.orgao_id)), orgao: p.orgao_id, partido: '', status: p.status, area: p.area, conf: p.confiabilidade, eixo: 'Políticas', data: p.ultima_atualizacao }));
+    if (st.f.partido) R = [];
+    if (st.quick === 'mudpol') R = R.filter((p) => ['REVISÃO', 'MUDANÇA DE POLÍTICA PÚBLICA', 'REDUÇÃO', 'ENCERRAMENTO'].includes(p.tipo_mov));
+    if (st.quick === 'novas') R = R.filter((p) => p.tipo_mov === 'NOVA POLÍTICA PÚBLICA');
+    if (st.quick === 'promessas') R = R.filter((p) => p.promessa && !/IMPLEMENTADO|ABANDONADO/.test(p.status));
+    if (st.quick === 'confirmacoes') R = R.filter((p) => p.confiabilidade === 'OFICIAL');
+    const Q = [['Quais programas serão mantidos?', (p) => p.tipo_mov === 'CONTINUIDADE'], ['Quais serão ampliados?', (p) => p.tipo_mov === 'EXPANSÃO'], ['Quais serão reformulados?', (p) => ['REVISÃO', 'MUDANÇA DE POLÍTICA PÚBLICA'].includes(p.tipo_mov)], ['Quais perdem prioridade?', (p) => ['REDUÇÃO', 'ENCERRAMENTO'].includes(p.tipo_mov) || /SEM AVANÇO|ABANDONADO/.test(p.status)], ['Quais novas políticas surgem?', (p) => p.tipo_mov === 'NOVA POLÍTICA PÚBLICA'], ['Quais discursos já viraram medida concreta?', (p) => ['DECISÃO', 'AÇÃO', 'IMPLEMENTAÇÃO', 'ENTREGA'].includes(p.natureza) || /IMPLEMENTA/.test(p.status)]];
+    qs.replaceChildren(...Q.map(([q, fn]) => { const it = R.filter(fn); return el('div', 'lx-card', el('h3', '', q), it.length ? el('ul', '', ...it.map((p) => el('li', '', `${p.tema} (${p.status})`))) : el('p', 'lx-empty', 'Nenhum item até agora.')); }));
+    R.sort((a, b) => a.area.localeCompare(b.area, 'pt') || (b.ultima_atualizacao > a.ultima_atualizacao ? 1 : -1));
+    tb.replaceChildren(...R.map((p) => { const r = el('tr'); r.dataset.key = p.id; r.append(td('', el('span', 'lx-b', p.tema), sub(p.descricao), p.promessa ? el('span', 'lx-sub', 'Compromisso de campanha') : null), td('', p.area), td('', tag(p.tipo_mov)), td('lx-hide-n', p.natureza), td('', tag(p.status, 'lx-strong'), sub(p.confiabilidade)), td('lx-hide-n', p.mudanca_vs_anterior, sub(p.politica_anterior && p.politica_anterior !== '—' ? 'Antes: ' + p.politica_anterior : '')), td('lx-hide-n', orgShort(orgaos, p.orgao_id), sub(p.responsavel), sub(p.instrumento && p.instrumento !== '—' ? 'Instrumento: ' + p.instrumento : ''), sub(p.prazo && p.prazo !== '—' ? 'Prazo: ' + p.prazo : '')), td('lx-hide-n', p.proxima_etapa, sub(p.ultima_mov)), td('lx-nw', dt(p.ultima_atualizacao), sub('1ª: ' + dd(p.primeira_mencao))), td('lx-hide-n', fontes(p.fontes))); return r; }));
+  }
+
+  function drawReestr(re, orgaos) {
+    const box = document.getElementById('re-list'); if (!re) return;
+    const R = re.filter((r) => okCommon({ h: hay(r), orgao: (Array.isArray(r.orgaos_afetados) ? r.orgaos_afetados : []).includes(st.f.orgao) ? st.f.orgao : (Array.isArray(r.orgaos_afetados) ? r.orgaos_afetados : [])[0], partido: '', status: r.status, area: '', conf: r.confiabilidade, eixo: 'Reestruturação', data: r.ultima_atualizacao }) && !st.f.partido && !st.f.area);
+    const kv = (pairs) => el('dl', 'lx-kv', ...pairs.flatMap(([k, v]) => [el('dt', '', k), el('dd', '', v instanceof Node ? v : (v || '—'))]));
+    box.replaceChildren(...(R.length ? R.map((r) => { const c = el('div', 'lx-card', el('div', 'lx-row', tag(r.status, 'lx-strong'), tag(r.confiabilidade)), el('h2', '', r.alteracao), kv([['Estrutura atual', r.estrutura_atual], ['Estrutura resultante', r.estrutura_resultante], ['Motivação declarada', r.motivacao_declarada], ['Motivação política (imprensa)', r.motivacao_politica], ['Competências afetadas', r.competencias], ['Órgãos afetados', (Array.isArray(r.orgaos_afetados) ? r.orgaos_afetados : []).map((id) => orgShort(orgaos, id)).join(', ')], ['Autoridades envolvidas', r.autoridades], ['Impacto institucional', r.impacto_institucional], ['Impacto sobre políticas', r.impacto_politicas], ['Próxima etapa', r.proxima_etapa], ['Primeira menção', dd(r.primeira_mencao)], ['Última atualização', dt(r.ultima_atualizacao)], ['Fontes', fontes(r.fontes)]])); c.dataset.key = r.id; return c; }) : [el('p', 'lx-empty', 'Nenhuma mudança administrativa com esses filtros.')]));
+  }
+
+  function drawTimeline(ev, orgaos) {
+    const box = document.getElementById('tl-list'); if (!ev) { if (failed('base')) box.replaceChildren(el('div', 'lx-fail', 'Failed to load')); return; }
+    let R = ev.filter((e) => okCommon({ h: hay(e, orgName(orgaos, e.orgao_id)), orgao: e.orgao_id, partido: e.titulo + ' ' + (e.nome || ''), status: e.para, area: (orgaos.find((o) => o.id === e.orgao_id) || {}).area, conf: e.confiabilidade, eixo: e.eixo, data: e.data }));
+    if (st.quick === 'confirmacoes') R = R.filter((e) => e.confiabilidade === 'OFICIAL' || /ESCOLHA CONFIRMADA|NOMEADO|SAÍDA CONFIRMADA|IMPLEMENTADO/.test(e.para || ''));
+    if (st.quick === 'admin') R = R.filter((e) => e.eixo === 'Reestruturação');
+    R.sort((a, b) => (a.data < b.data ? 1 : -1));
+    const out = []; let last = '';
+    for (const e of R) { const k = dayKey(e.data); if (k !== last) { out.push(el('div', 'lx-day', fDay.format(new Date(e.data)))); last = k; } out.push(evItem(e, orgaos, false)); }
+    box.replaceChildren(...(out.length ? out : [el('p', 'lx-empty', 'Nenhum evento com esses filtros.')]));
+  }
+
+  function drawPessoas(nomes, pos, tr, ev, pols, orgaos) {
+    const out = document.getElementById('ps-out'); const dl = document.getElementById('ps-list');
+    if (!nomes || !pos) return;
+    const perfis = rows('t_pessoa') || [];
+    const all = new Set([...perfis.map((p) => p.nome), ...nomes.map((n) => n.nome), ...pos.map((p) => p.ocupante).filter((x) => x && !/^(A verificar|—)$/.test(x)), ...(tr || []).map((t) => t.nome), ...(ev || []).map((e) => e.nome).filter((x) => x && x !== '—')]);
+    dl.replaceChildren(...[...all].sort((a, b) => a.localeCompare(b, 'pt')).map((n) => new Option(n)));
+    const q = st.pessoa.trim().toLowerCase();
+    if (!q) {
+      out.replaceChildren(el('p', 'lx-empty', 'Digite um nome ou clique em qualquer nome do painel. Perfis disponíveis:'), el('div', 'lx-row', ...perfis.slice().sort((a, b) => a.nome.localeCompare(b.nome, 'pt')).map((p) => plink(p.nome))));
+      return;
+    }
+    const exact = perfis.find((p) => p.nome.toLowerCase() === q) || perfis.find((p) => p.nome.toLowerCase().includes(q));
+    const alvo = exact ? exact.nome.toLowerCase() : q;
+    const mm = (s) => String(s || '').toLowerCase().includes(alvo);
+    const N = nomes.filter((n) => mm(n.nome)); const P = pos.filter((p) => mm(p.ocupante)); const T = (tr || []).filter((t) => mm(t.nome)); const PL = (pols || []).filter((p) => mm(p.responsavel));
+    const E = (ev || []).filter((e) => mm(e.nome) || mm(e.titulo));
+    if (!exact && !N.length && !P.length && !T.length && !E.length) { out.replaceChildren(el('p', 'lx-empty', 'Ninguém com esse nome na base.')); return; }
+    const nomeTxt = exact ? exact.nome : (N[0] || {}).nome || (P[0] || {}).ocupante || st.pessoa;
+    const inic = nomeTxt.split(/\s+/).filter(Boolean).map((w) => w[0]).filter((c) => /\p{Lu}/u.test(c)).slice(0, 2).join('');
+    const temFoto = exact && typeof exact.foto === 'string' && (exact.foto.startsWith('/_blob/') || exact.foto.startsWith('data:image/'));
+    const avatar = temFoto ? Object.assign(el('img', 'lx-avatar'), { src: exact.foto, alt: 'Foto de ' + nomeTxt }) : el('div', 'lx-avatar', inic);
+    if (!temFoto) avatar.setAttribute('aria-hidden', 'true');
+    const kv = (pairs) => el('dl', 'lx-kv', ...pairs.flatMap(([k, v]) => [el('dt', '', k), el('dd', '', v instanceof Node ? v : (v || '—'))]));
+    const rels = exact && Array.isArray(exact.relacionamentos) && exact.relacionamentos.length ? el('ul', '', ...exact.relacionamentos.map((r) => el('li', '', r))) : 'Nenhum relacionamento documentado na base.';
+    const head = el('div', 'lx-person', avatar, el('div', 'lx', el('h2', '', nomeTxt), kv([
+      ['Cargo atual', exact ? exact.cargo_atual : ((N[0] || {}).cargo_atual || (P[0] || {}).cargo)],
+      ['Partido / vínculo', exact ? exact.partido : ((N[0] || {}).partido || (P[0] || {}).partido_ocupante)],
+      ['Histórico profissional', exact ? exact.historico : 'Perfil ainda não registrado.'],
+      ['Relacionamentos políticos documentados', rels],
+      ['Fontes do perfil', exact ? fontes(exact.fontes) : '—'],
+    ])));
+    const consid = N.map((n) => { const p = pos.find((x) => x.id === n.posicao_id) || {}; const c = el('div', 'lx-card', el('div', 'lx-row', tag(n.status, 'lx-strong'), tag(n.confiabilidade)), el('h3', '', `${p.cargo || '—'} (${orgShort(orgaos, n.orgao_id)})`), kv([['Quem articula', n.quem_articula], ['Fonte da articulação', n.fonte_articulacao], ['Primeira menção', dd(n.primeira_mencao)], ['Última atualização', dt(n.ultima_atualizacao)], ['Próximo movimento', n.proximo_movimento], ['Observação', n.nota], ['Fontes', fontes(n.fontes)]])); c.dataset.key = n.id; return c; });
+    const fz = (n) => (Array.isArray(n.fontes) && n.fontes[0]) || {};
+    const crono = [...N.map((n) => ({ data: n.primeira_mencao, titulo: `Nome aparece para ${((pos.find((x) => x.id === n.posicao_id) || {}).cargo || 'cargo')}`, fonte: fz(n).v, link: fz(n).u })), ...E.map((e) => ({ data: e.data, titulo: e.titulo + ((e.para && e.para !== '—') ? ` → ${e.para}` : ''), fonte: e.fonte, link: e.link }))].sort((a, b) => (a.data < b.data ? -1 : 1));
+    const seen = new Set(); const C = crono.filter((c) => { const k = dayKey(c.data) + c.titulo; if (seen.has(k)) return false; seen.add(k); return true; });
+    const sec = (t, kids) => kids.length ? el('div', 'lx', el('h3', '', t), ...kids) : null;
+    out.replaceChildren(...[
+      head,
+      sec('Ocupa hoje', P.map((p) => el('p', '', `${p.cargo} (${orgShort(orgaos, p.orgao_id)}) · ${p.situacao_ocupante}`))),
+      sec('Cargos para os quais aparece', consid.length ? [el('div', 'lx-grid', ...consid)] : []),
+      sec('Na transição', T.map((t) => el('p', '', `${t.funcao} · ${t.status} · ${t.ultimo_movimento}`))),
+      sec('Responsável por políticas', PL.map((p) => el('p', '', `${p.tema} · ${p.status}`))),
+      sec('Cronologia das movimentações', C.length ? [el('div', 'lx-feed', ...C.map((c) => el('div', 'lx-item', el('span', 'lx-when', dd(c.data)), el('div', '', el('span', '', c.titulo), el('span', 'lx-src', link(c.fonte, c.link))))))] : []),
+    ].filter(Boolean));
+  }
+  document.getElementById('ps-q').addEventListener('input', (e) => { st.pessoa = e.target.value; draw(); });
+  document.addEventListener('click', (e) => { const b = e.target.closest('[data-pessoa]'); if (!b) return; e.preventDefault(); st.pessoa = b.dataset.pessoa; document.getElementById('ps-q').value = st.pessoa; st.tab = 'pessoas'; dash.setLink('pessoas'); draw(); window.scrollTo({ top: 0 }); });
+  function drawLeitura() {
+    const box = document.getElementById('leit-list'); const L = rows('t_leitura');
+    if (!L) { if (failed('base')) box.replaceChildren(el('div', 'lx-fail', 'Failed to load')); return; }
+    const K = { FATO: ['Fato', 'k-fato'], SINAL: ['Sinal', 'k-sinal'], 'INTERPRETAÇÃO': ['Interpretação', 'k-int'] };
+    const abertos = new Set([...box.querySelectorAll('details[open]')].map((d) => d.dataset.key));
+    const primeira = !box.children.length;
+    box.replaceChildren(...L.slice().sort((a, b) => a.id.localeCompare(b.id)).map((l, i) => {
+      const d = el('details', '', el('summary', '', l.pergunta), el('ul', '', ...(Array.isArray(l.itens) ? l.itens : []).map((x) => el('li', '', el('span', 'lx-kind ' + ((K[x.tipo] || [])[1] || ''), (K[x.tipo] || [x.tipo])[0]), el('div', '', el('span', '', x.texto), fontes(x.fontes))))), el('span', 'lx-muted', 'Atualizado ' + dt(l.ultima_atualizacao)));
+      d.dataset.key = l.id; if (primeira ? i < 4 : abertos.has(l.id)) d.open = true; return d;
+    }));
+  }
+
+
+  // ---------- gráficos ----------
+  const resolveColor = (c) => { const s = document.createElement('span'); s.style.color = c; s.style.display = 'none'; document.body.append(s); const v = getComputedStyle(s).color; s.remove(); return v; };
+  const ramp = (n) => { const a = resolveColor('var(--color-panel)'); const b = resolveColor(dash.colors[0]); const i = d3.interpolateRgb(a, b); return d3.range(n).map((k) => i(0.32 + 0.68 * (n === 1 ? 1 : k / (n - 1)))); };
+  const SVGNS = 'http://www.w3.org/2000/svg';
+  const tipFor = (box) => { let t = box.querySelector('.lx-tip'); if (!t) { t = el('div', 'lx-tip'); t.hidden = true; box.append(t); } return t; };
+  const showTip = (box, ev, title, lines) => { const t = tipFor(box); t.replaceChildren(el('b', '', title), ...lines.map((l) => el('div', '', l))); t.hidden = false; const r = box.getBoundingClientRect(); let x = ev.clientX - r.left + 12, y = ev.clientY - r.top + 12; const w = t.offsetWidth, hh = t.offsetHeight; if (x + w > r.width) x = Math.max(0, ev.clientX - r.left - w - 12); if (y + hh > r.height + 40) y = Math.max(0, ev.clientY - r.top - hh - 12); t.style.left = x + 'px'; t.style.top = y + 'px'; };
+  const hideTip = (box) => { const t = box.querySelector('.lx-tip'); if (t) t.hidden = true; };
+  const legend = (id, items) => { const n = document.getElementById(id); if (n) n.replaceChildren(...items.map(([label, color, dashd]) => el('span', '', Object.assign(el('span', 'lx-sw' + (dashd ? ' lx-dash' : '')), { style: dashd ? '' : `background:${color}` }), label))); };
+  const barPath = (x0, y, w, h, r) => { r = Math.min(r, h / 2, w); if (w <= 0) return ''; return `M${x0},${y}H${x0 + w - r}Q${x0 + w},${y} ${x0 + w},${y + r}V${y + h - r}Q${x0 + w},${y + h} ${x0 + w - r},${y + h}H${x0}Z`; };
+  const textW = (svg, s) => { const t = document.createElementNS(SVGNS, 'text'); t.textContent = s; svg.append(t); const w = t.getComputedTextLength(); t.remove(); return w; };
+  const failBox = (box) => box.replaceChildren(el('div', 'lx-fail', 'Failed to load'));
+
+  // barras horizontais: series = [{key, label, color}], rows com label e valores
+  function hbars(box, rows, { label, series, tip }) {
+    const W = box.clientWidth; if (!W) return;
+    const svg = document.createElementNS(SVGNS, 'svg'); svg.setAttribute('class', 'lx-svg'); svg.setAttribute('width', '100%'); box.replaceChildren(svg);
+    const lw = Math.min(W * 0.48, Math.max(60, ...rows.map((r) => textW(svg, label(r)))));
+    const vmax = Math.max(1, ...rows.flatMap((r) => series.map((s) => +r[s.key] || 0)));
+    const vw = Math.max(...rows.flatMap((r) => series.map((s) => textW(svg, String(r[s.key] ?? 0)))), 10);
+    const bh = series.length > 1 ? 11 : 16, gap = 2, rowH = series.length * (bh + gap) + 12;
+    const H = rows.length * rowH + 4;
+    svg.setAttribute('viewBox', `0 0 ${W} ${H}`); svg.setAttribute('height', H);
+    const x = d3.scaleLinear([0, vmax], [0, Math.max(10, W - lw - 16 - vw - 8)]);
+    const sel = d3.select(svg);
+    rows.forEach((r, i) => {
+      const y0 = i * rowH + 6;
+      const g = sel.append('g').attr('tabindex', 0).style('cursor', 'default');
+      g.append('rect').attr('x', 0).attr('y', y0 - 4).attr('width', W).attr('height', rowH).attr('fill', 'transparent');
+      g.append('text').attr('x', lw).attr('y', y0 + (series.length * (bh + gap)) / 2).attr('dy', '0.35em').attr('text-anchor', 'end').text(label(r));
+      series.forEach((s, j) => {
+        const v = +r[s.key] || 0; const yy = y0 + j * (bh + gap); const x0 = lw + 12;
+        if (v > 0) g.append('path').attr('d', barPath(x0, yy, x(v), bh, 4)).attr('fill', typeof s.color === 'function' ? s.color(r, i) : s.color);
+        else g.append('rect').attr('x', x0).attr('y', yy + bh / 2 - 0.5).attr('width', 6).attr('height', 1).attr('fill', 'var(--cds-chart-axis)');
+        g.append('text').attr('class', 'lx-val').attr('x', x0 + x(v) + 6).attr('y', yy + bh / 2).attr('dy', '0.35em').text(v);
+      });
+      const on = (ev) => { g.attr('opacity', 1); sel.selectAll('g').filter(function () { return this !== g.node(); }).attr('opacity', 0.55); const tt = tip(r); showTip(box, ev, tt[0], tt[1]); };
+      g.on('mousemove', on).on('focus', (ev) => { const b = g.node().getBoundingClientRect(); on({ clientX: b.left + lw, clientY: b.top }); }).on('mouseleave blur', () => { sel.selectAll('g').attr('opacity', 1); hideTip(box); });
+    });
+  }
+
+  function drawRitmo(boxId, legId) {
+    const box = document.getElementById(boxId); const d = dash.data('g_ritmo');
+    if (d.status === 'error') return failBox(box); if (d.status !== 'ok') return;
+    const W = box.clientWidth; if (!W) return;
+    const RELS = ['🔴 ALTA', '🟠 MÉDIA', '🟡 BAIXA'];
+    const cols = ramp(3).reverse();
+    const color = (r) => cols[RELS.indexOf(r)] || cols[2];
+    legend(legId, RELS.map((r, i) => [r.replace(/^\S+\s/, '') + ' relevância', cols[i]]));
+    const dias = [...new Set(d.data.map((r) => r.dia))].sort();
+    if (!dias.length) { box.replaceChildren(el('p', 'lx-empty', 'Nenhuma movimentação registrada.')); return; }
+    const tot = dias.map((dia) => ({ dia, vals: RELS.map((rel) => (d.data.find((r) => r.dia === dia && r.relevancia === rel) || {}).n || 0) }));
+    const H = 220, m = { t: 10, r: 8, b: 26, l: 28 };
+    const svg = document.createElementNS(SVGNS, 'svg'); svg.setAttribute('class', 'lx-svg'); svg.setAttribute('width', '100%'); svg.setAttribute('viewBox', `0 0 ${W} ${H}`); svg.setAttribute('height', H); box.replaceChildren(svg);
+    const ymax = Math.max(1, ...tot.map((t) => d3.sum(t.vals)));
+    const y = d3.scaleLinear([0, ymax], [H - m.b, m.t]).nice();
+    const x = d3.scaleBand(dias, [m.l, W - m.r]).paddingInner(0.3).paddingOuter(0.15);
+    const bw = Math.min(32, x.bandwidth()); const off = (x.bandwidth() - bw) / 2;
+    const sel = d3.select(svg);
+    y.ticks(4).forEach((t) => { sel.append('line').attr('x1', m.l).attr('x2', W - m.r).attr('y1', y(t)).attr('y2', y(t)).attr('stroke', 'var(--cds-chart-grid)'); sel.append('text').attr('x', m.l - 6).attr('y', y(t)).attr('dy', '0.35em').attr('text-anchor', 'end').text(t); });
+    const fmtDia = (s) => s.slice(8, 10) + '/' + s.slice(5, 7);
+    const every = Math.max(1, Math.ceil(dias.length / Math.max(1, Math.floor((W - m.l) / 48))));
+    dias.forEach((dia, i) => { if (i % every === 0 || i === dias.length - 1) sel.append('text').attr('x', x(dia) + x.bandwidth() / 2).attr('y', H - 8).attr('text-anchor', 'middle').text(fmtDia(dia)); });
+    tot.forEach((t) => {
+      const g = sel.append('g').attr('tabindex', 0); let acc = 0; const segs = [];
+      t.vals.forEach((v, i) => { if (!v) return; segs.push({ i, y0: acc, y1: acc + v }); acc += v; });
+      segs.forEach((s, k) => {
+        const top = k === segs.length - 1; const yTop = y(s.y1) + (top ? 0 : 1); const yBot = y(s.y0) - (k === 0 ? 0 : 1); const hgt = Math.max(1, yBot - yTop);
+        if (top) { const r = Math.min(4, hgt, bw / 2); g.append('path').attr('d', `M${x(t.dia) + off},${yBot}V${yTop + r}Q${x(t.dia) + off},${yTop} ${x(t.dia) + off + r},${yTop}H${x(t.dia) + off + bw - r}Q${x(t.dia) + off + bw},${yTop} ${x(t.dia) + off + bw},${yTop + r}V${yBot}Z`).attr('fill', cols[s.i]); }
+        else g.append('rect').attr('x', x(t.dia) + off).attr('y', yTop).attr('width', bw).attr('height', hgt).attr('fill', cols[s.i]);
+      });
+      g.append('rect').attr('x', x(t.dia)).attr('y', m.t).attr('width', x.bandwidth()).attr('height', H - m.t - m.b).attr('fill', 'transparent');
+      const total = d3.sum(t.vals);
+      const on = (ev) => showTip(box, ev, dd(t.dia), [`${total} movimentação(ões)`, ...RELS.map((r, i) => t.vals[i] ? `${r.replace(/^\S+\s/, '')}: ${t.vals[i]}` : null).filter(Boolean)]);
+      g.on('mousemove', on).on('focus', (ev) => { const b = g.node().getBoundingClientRect(); on({ clientX: b.left, clientY: b.top }); }).on('mouseleave blur', () => hideTip(box));
+    });
+  }
+
+  function drawMapa() {
+    const box = document.getElementById('mapa-box'); const d = dash.data('g_esplanada');
+    if (d.status === 'error') return failBox(box); if (d.status !== 'ok') return;
+    const ETAPAS = ['⚪ SEM MOVIMENTAÇÃO', '🔵 NOME MENCIONADO', '🟡 NOME EM CONSIDERAÇÃO', '🟠 NEGOCIAÇÃO EM CURSO', '🟣 CONVITE REPORTADO', '🟢 ESCOLHA CONFIRMADA', '✅ NOMEADO/OFICIALIZADO'];
+    const cols = ['var(--cds-chart-muted)', ...ramp(6)];
+    const cor = (e) => e === '⬛ SAÍDA CONFIRMADA' ? 'var(--cds-chart-status-critical)' : cols[Math.max(0, ETAPAS.indexOf(e))];
+    const presentes = new Set(d.data.map((r) => r.etapa));
+    legend('mapa-leg', [...ETAPAS.filter((e) => presentes.has(e) || e === '⚪ SEM MOVIMENTAÇÃO').map((e) => [e.replace(/^\S+\s/, '').toLowerCase().replace(/^./, (c) => c.toUpperCase()), cor(e)]), ...(presentes.has('⬛ SAÍDA CONFIRMADA') ? [['Saída confirmada', cor('⬛ SAÍDA CONFIRMADA')]] : []), ['Titular com saída sinalizada', '', true]]);
+    const grupos = ['Núcleo do Planalto', 'Ministérios', 'Bancos, estatais e autarquias'];
+    box.replaceChildren(...grupos.map((gname) => {
+      const it = d.data.filter((r) => r.grupo === gname); if (!it.length) return null;
+      const grid = el('div', 'lx-map', ...it.map((r) => {
+        const b = el('button', 'lx-tilebtn' + (r.saida ? ' lx-saida' : ''), el('span', 'lx-sig', r.sigla && r.sigla !== '—' ? r.sigla : r.orgao), el('span', 'lx-occ', r.ocupante), el('span', 'lx-stg', r.lider ? `${r.lider} · ${r.etapa.replace(/^\S+\s/, '').toLowerCase()}` : r.etapa.replace(/^\S+\s/, '').toLowerCase()));
+        b.type = 'button'; b.style.setProperty('--lx-c', cor(r.etapa)); b.dataset.key = r.orgao_id;
+        b.setAttribute('aria-label', `${r.orgao}: ${r.ocupante}, ${r.situacao}. ${r.etapa}${r.lider ? ', ' + r.lider : ''}`);
+        b.addEventListener('mousemove', (ev) => showTip(box, ev, r.orgao, [`Titular: ${r.ocupante}`, `Situação: ${r.situacao}`, `Etapa: ${r.etapa}`, r.nomes ? `${r.nomes} nome(s) em circulação` : 'Nenhum nome em circulação']));
+        b.addEventListener('mouseleave', () => hideTip(box));
+        b.addEventListener('click', () => { hideTip(box); st.org = r.orgao_id; st.tab = 'orgaos'; dash.setLink('orgaos'); draw(); window.scrollTo({ top: 0 }); });
+        return b;
+      }));
+      return el('div', 'lx-map-group', el('span', 'lx-muted', `${gname} (${it.length})`), grid);
+    }));
+    box.style.position = 'relative';
+  }
+
+  function drawFunil() {
+    const box = document.getElementById('funil-box'); const d = dash.data('g_funil');
+    if (d.status === 'error') return failBox(box); if (d.status !== 'ok') return;
+    const cols = ramp(6);
+    const color = (r) => r.ordem < 6 ? cols[r.ordem] : r.status.startsWith('⬛') ? 'var(--cds-chart-status-critical)' : 'var(--cds-chart-muted)';
+    hbars(box, d.data, { label: (r) => r.status.replace(/^\S+\s/, '').toLowerCase().replace(/^./, (c) => c.toUpperCase()), series: [{ key: 'n', color }], tip: (r) => [r.status, [`${r.n} nome(s)`]] });
+  }
+
+  function drawPartidosGraf() {
+    const box = document.getElementById('part-box'); const d = dash.data('g_partidos');
+    if (d.status === 'error') return failBox(box); if (d.status !== 'ok') return;
+    legend('part-leg', [['Titulares filiados', dash.colors[0]], ['Nomes em circulação', dash.colors[1]]]);
+    hbars(box, d.data, { label: (r) => r.partido, series: [{ key: 'titulares', color: dash.colors[0] }, { key: 'nomes', color: dash.colors[1] }], tip: (r) => [r.partido, [`Titulares filiados: ${r.titulares}`, `Nomes em circulação: ${r.nomes}`]] });
+  }
+
+  function drawPolGraf() {
+    const a = document.getElementById('poltipo-box'); const b = document.getElementById('poletapa-box');
+    const dt1 = dash.data('g_pol_tipo'); const dt2 = dash.data('g_pol_status');
+    if (dt1.status === 'error') failBox(a); else if (dt1.status === 'ok') hbars(a, dt1.data, { label: (r) => r.tipo_mov.toLowerCase().replace(/^./, (c) => c.toUpperCase()), series: [{ key: 'n', color: dash.colors[0] }], tip: (r) => [r.tipo_mov, [`${r.n} item(ns)`]] });
+    if (dt2.status === 'error') failBox(b); else if (dt2.status === 'ok') hbars(b, dt2.data, { label: (r) => r.status.replace(/^\S+\s/, '').toLowerCase().replace(/^./, (c) => c.toUpperCase()), series: [{ key: 'n', color: dash.colors[0] }], tip: (r) => [r.status, [`${r.n} item(ns)`, `${r.promessas} compromisso(s) de campanha`]] });
+  }
+
+  // ---------- draw ----------
+  function draw() {
+    nav.querySelectorAll('.lx-tab').forEach((b) => b.setAttribute('aria-selected', String(b.dataset.tab === st.tab)));
+    quick.querySelectorAll('.lx-chip').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.q === st.quick)));
+    document.querySelectorAll('[data-pane]').forEach((s) => { s.hidden = s.dataset.pane !== st.tab; });
+    const showF = !['inicio', 'pessoas'].includes(st.tab) && !(st.tab === 'orgaos' && st.org);
+    document.getElementById('lx-filterbar').hidden = !showF; quick.hidden = st.tab === 'pessoas';
+    for (const [k, id] of Object.entries(fIds)) { const n = document.getElementById(id); if (n !== document.activeElement) n.value = k === 'q' ? (n.value && n.value.trim().toLowerCase() === st.f.q ? n.value : st.f.q) : st.f[k]; }
+
+    const orgaos = rows('t_orgao') || []; const pos = rows('t_posicao'); const nomes = rows('t_nome'); const ev = rows('t_evento'); const pols = rows('t_politica'); const checks = rows('t_checagem'); const parts = rows('t_partido');
+    if (checks && checks.length) {
+      const last = checks.slice().sort((a, b) => (a.at < b.at ? 1 : -1))[0];
+      const u = document.getElementById('lx-ult'); u.classList.remove('dash-skeleton'); u.textContent = `${dt(last.at)}${last.nota ? ' · ' + last.nota : ''}`;
+      const p = document.getElementById('lx-prox'); p.classList.remove('dash-skeleton'); p.textContent = dt(nextCheck(checks).toISOString());
+    } else if (failed('base')) { ['lx-ult', 'lx-prox'].forEach((id) => { const n = document.getElementById(id); n.classList.remove('dash-skeleton'); n.textContent = '—'; }); }
+
+    if (orgaos.length) fillSel('f-orgao', 'Todos os órgãos', orgaos.slice().sort((a, b) => a.nome.localeCompare(b.nome, 'pt')).map((o) => [o.id, o.nome]));
+    const partidos = new Set(); (parts || []).forEach((p) => partidos.add(p.partido)); (nomes || []).forEach((n) => n.partido && n.partido !== '—' && partidos.add(n.partido));
+    fillSel('f-partido', 'Todos os partidos', [...partidos].sort((a, b) => a.localeCompare(b, 'pt')));
+    fillSel('f-status', 'Todos os status', st.tab === 'politicas' ? POL_ST : st.tab === 'reestruturacao' ? POL_ST : NOME_ST);
+    fillSel('f-area', 'Todas as áreas e temas', [...new Set([...orgaos.map((o) => o.area), ...(pols || []).map((p) => p.area)])].filter(Boolean).sort((a, b) => a.localeCompare(b, 'pt')));
+    fillSel('f-conf', 'Qualquer confirmação', CONF);
+    fillSel('f-eixo', 'Todos os tipos de informação', EIXOS);
+
+    if (st.tab === 'inicio') { drawInicio(ev, checks, orgaos); drawLeitura(); drawMapa(); drawFunil(); drawRitmo('ritmo-box', 'ritmo-leg'); }
+    if (st.tab === 'composicao') drawComposicao(pos, nomes, orgaos);
+    if (st.tab === 'orgaos') drawOrgaos(rows('t_orgao'), pos, nomes, pols, ev);
+    if (st.tab === 'transicao') drawTransicao(rows('t_transicao'));
+    if (st.tab === 'politica-partidaria') { drawPartidos(parts, rows('t_balanco')); drawPartidosGraf(); }
+    if (st.tab === 'politicas') { drawPoliticas(pols, orgaos); drawPolGraf(); }
+    if (st.tab === 'reestruturacao') drawReestr(rows('t_reestr'), orgaos);
+    if (st.tab === 'linha-do-tempo') { drawTimeline(ev, orgaos); drawRitmo('ritmo2-box', 'ritmo2-leg'); }
+    if (st.tab === 'pessoas') drawPessoas(nomes, pos, rows('t_transicao'), ev, pols, orgaos);
+  }
+  dash.onData(draw);
+})();
+</script>
+<script>
+(() => {
+  let sig = '';
+  const load = () => fetch('data/base.json?t=' + Date.now(), { cache: 'no-store' })
+    .then((r) => { if (!r.ok) throw new Error(r.status); return r.text(); })
+    .then((t) => { if (t === sig) return; sig = t; window.dash._load(JSON.parse(t)); })
+    .catch(() => { if (!sig) window.dash._fail(); });
+  load();
+  setInterval(load, 10 * 60 * 1000);
+  let to; window.addEventListener('resize', () => { clearTimeout(to); to = setTimeout(() => window.dash._emit(), 150); });
+  const btn = document.getElementById('theme-btn');
+  const root = document.documentElement;
+  const isDark = () => root.dataset.theme ? root.dataset.theme === 'dark' : matchMedia('(prefers-color-scheme: dark)').matches;
+  try { const s = localStorage.getItem('tema'); if (s) root.dataset.theme = s; } catch (e) {}
+  const label = () => { btn.textContent = isDark() ? 'Tema claro' : 'Tema escuro'; };
+  label();
+  btn.addEventListener('click', () => { root.dataset.theme = isDark() ? 'light' : 'dark'; try { localStorage.setItem('tema', root.dataset.theme); } catch (e) {} label(); window.dash._emit(); });
+})();
+</script>
+</body>
+</html>
