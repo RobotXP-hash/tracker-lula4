@@ -82,6 +82,8 @@ img { max-width: 100%; }
 .lx-active { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; font-size: var(--cds-font-size-caption); padding: 6px 10px; border: 1px dashed var(--color-border-line); border-radius: var(--cds-radius); }
 .lx-active b { font-weight: 600; }
 .lx-emptybox { display: flex; flex-direction: column; align-items: flex-start; gap: 8px; }
+.lx-novo { display: inline-block; margin-left: 4px; font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: .04em; color: var(--color-bg); background: var(--dz-c2, #f2c94c); border-radius: 4px; padding: 0 4px; }
+.lx-when { display: flex; flex-direction: column; align-items: flex-start; gap: 2px; }
 .lx-chips { display: flex; flex-wrap: wrap; gap: var(--cds-gap-xs); }
 .lx-chip { font: inherit; font-size: var(--cds-font-size-caption); border: 1px solid var(--color-border-line); background: var(--color-bg); color: var(--color-fg); border-radius: 999px; padding: 2px var(--cds-pad-sm); cursor: pointer; }
 .lx-chip[aria-pressed="true"] { background: var(--color-fg); color: var(--color-bg); border-color: var(--color-fg); }
@@ -505,7 +507,7 @@ svg.dz-donut { width: 100%; height: auto; }
     </div>
     <div class="lx-card" data-source="t_evento">
       <h2>Linha do tempo</h2>
-      <p class="lx-muted">Formação do governo, reorganização administrativa, mudanças de poder e evolução das políticas, em ordem cronológica inversa.</p>
+      <p class="lx-muted">Formação do governo, reorganização administrativa, mudanças de poder e evolução das políticas. A ordem é a da entrada no Radar, da mais recente para a mais antiga; quando o fato é de outro horário, a data dele aparece ao lado. Itens que entraram desde a checagem anterior levam a marca "novo".</p>
       <div id="tl-list" class="lx-feed"></div>
     </div>
   </section>
@@ -729,8 +731,9 @@ dash.calc('painel', {
   title: 'Números do painel de entrada',
   description: 'Contagens por módulo para os cartões de navegação.',
   fn: (t_evento, t_checagem, t_orgao, t_posicao, t_nome, t_pessoa, t_partido, t_transicao, t_reestr, t_politica) => {
-    const ult = t_checagem.slice().sort((a, b) => (a.at < b.at ? 1 : -1))[0] || {};
-    const novas = t_evento.filter((e) => e.registrado_em === ult.at);
+    const ordC = t_checagem.slice().sort((a, b) => (a.at < b.at ? 1 : -1)); const ult = ordC[0] || {};
+    const prevC = ordC.find((c) => ult.at && (new Date(ult.at) - new Date(c.at)) >= 2 * 3600000);
+    const novas = t_evento.filter((e) => !prevC || (e.registrado_em || '') > prevC.at);
     const ultEv = t_evento.slice().sort((a, b) => (a.data < b.data ? 1 : -1))[0] || {};
     const movOrg = new Set(t_evento.map((e) => e.orgao_id)).size;
     const cont = (arr, k) => arr.reduce((m, x) => { m[x[k]] = (m[x[k]] || 0) + 1; return m; }, {});
@@ -901,11 +904,14 @@ dash.calc('painel', {
     const list = document.getElementById('nov-list'); const subt = document.getElementById('nov-sub');
     if (!ev || !checks) { if (failed('base')) list.replaceChildren(el('div', 'lx-fail', 'Failed to load')); return; }
     const ord = checks.slice().sort((a, b) => (a.at < b.at ? 1 : -1));
-    const last = ord[0]; const withNews = ord.find((c) => ev.some((e) => e.registrado_em === c.at));
-    let shown = [];
-    if (last && ev.some((e) => e.registrado_em === last.at)) { shown = ev.filter((e) => e.registrado_em === last.at); subt.textContent = `Registradas na checagem de ${dt(last.at)}.`; }
-    else if (withNews) { shown = ev.filter((e) => e.registrado_em === withNews.at); subt.textContent = `A última checagem (${dt(last.at)}) não trouxe alterações. Abaixo, as novidades da checagem de ${dt(withNews.at)}.`; }
-    else subt.textContent = 'Nenhuma novidade registrada ainda.';
+    const last = ord[0]; const prevC = ord.find((c) => last && (new Date(last.at) - new Date(c.at)) >= 2 * 3600000);
+    let shown = ev.filter((e) => !prevC || (e.registrado_em || '') > prevC.at);
+    if (shown.length) subt.textContent = `Registradas desde ${dt(prevC ? prevC.at : (shown[0].registrado_em || ''))}. Última checagem: ${dt(last.at)}.`;
+    else {
+      const lastReg = ev.map((e) => e.registrado_em || '').sort().pop();
+      shown = lastReg ? ev.filter((e) => e.registrado_em === lastReg) : [];
+      subt.textContent = shown.length ? `A última checagem (${dt(last.at)}) não trouxe alterações. Abaixo, as últimas novidades registradas (${dt(lastReg)}).` : 'Nenhuma novidade registrada ainda.';
+    }
     const rank = (r) => (/ALTA/.test(r) ? 0 : /MÉDIA/.test(r) ? 1 : 2);
     shown.sort((a, b) => rank(a.relevancia) - rank(b.relevancia) || (a.data < b.data ? 1 : -1));
     const LIM = 6; const extra = shown.length - LIM;
@@ -1056,9 +1062,11 @@ dash.calc('painel', {
     let R = ev.filter((e) => okCommon({ h: hay(e, orgName(orgaos, e.orgao_id)), orgao: e.orgao_id, partido: e.titulo + ' ' + (e.nome || ''), status: e.para, area: (orgaos.find((o) => o.id === e.orgao_id) || {}).area, conf: e.confiabilidade, eixo: e.eixo, data: e.data }));
     if (st.quick === 'confirmacoes') R = R.filter((e) => e.confiabilidade === 'OFICIAL' || /ESCOLHA CONFIRMADA|NOMEADO|SAÍDA CONFIRMADA|IMPLEMENTADO/.test(e.para || ''));
     if (st.quick === 'admin') R = R.filter((e) => e.eixo === 'Reestruturação');
-    R.sort((a, b) => (a.data < b.data ? 1 : -1));
+    const reg = (e) => e.registrado_em || e.data;
+    R.sort((a, b) => (reg(a) < reg(b) ? 1 : reg(a) > reg(b) ? -1 : (a.data < b.data ? 1 : -1)));
+    const ordC = (rows('t_checagem') || []).slice().sort((x, y) => (x.at < y.at ? 1 : -1)); const prevC = ordC.find((c) => ordC[0] && (new Date(ordC[0].at) - new Date(c.at)) >= 2 * 3600000); const recente = prevC ? new Date(prevC.at).getTime() : Date.now() - 24 * 3600000;
     const out = []; let last = '';
-    for (const e of R) { const k = dayKey(e.data); if (k !== last) { out.push(el('div', 'lx-day', fDay.format(new Date(e.data)))); last = k; } out.push(evItem(e, orgaos, false)); }
+    for (const e of R) { const k = dayKey(reg(e)); if (k !== last) { out.push(el('div', 'lx-day', 'Registrado em ' + fDay.format(new Date(reg(e))))); last = k; } const it = evItem(e, orgaos, true); const w = it.querySelector('.lx-when'); if (w) { w.replaceChildren(...[el('span', '', fH.format(new Date(reg(e)))), new Date(reg(e)) > recente ? el('span', 'lx-novo', 'novo') : null].filter(Boolean)); } const meta = it.querySelector('.lx-row'); if (meta && e.data && dayKey(e.data) + fH.format(new Date(e.data)) !== dayKey(reg(e)) + fH.format(new Date(reg(e)))) meta.append(el('span', 'lx-muted lx-howto', 'fato de ' + dt(e.data))); out.push(it); }
     box.replaceChildren(...(out.length ? out : [vazio('Nenhum evento com esses filtros.')]));
   }
 
