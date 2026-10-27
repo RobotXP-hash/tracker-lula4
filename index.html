@@ -24,16 +24,16 @@
   --cds-pad-xs: 4px; --cds-pad-sm: 8px; --cds-pad-md: 12px; --cds-pad-lg: 18px; --cds-radius: 8px; --cds-dur-slow: .35s;
 }
 @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
-  --bg: #111316; --panel: #1a1d21; --fg: #eceae4; --fg-muted: #a3a6ab; --line: #2c3036;
-  --ok: #4fbf86; --warn: #e0a040; --bad: #ef6b5e; --crit: #e66767;
-  --s1: #3987e5; --s2: #d95926; --muted-mark: #4a4e55; --grid: #23272c; --axis: #4a4e55;
-  --pop: #22262b; --pop-border: #353a41; --shadow: 0 6px 24px rgba(0,0,0,.45); --mast: #0a0b0d; --mast-fg: #eceae4; color-scheme: dark;
+  --bg: #0e1628; --panel: #1a2540; --fg: #eef2fa; --fg-muted: #9aa7c2; --line: #26324f;
+  --ok: #2fd07a; --warn: #f2b14c; --bad: #ef6b6b; --crit: #ef6b6b;
+  --s1: #3987e5; --s2: #d95926; --muted-mark: #3a4766; --grid: #222e4a; --axis: #3a4766;
+  --pop: #1f2b49; --pop-border: #33416a; --shadow: 0 6px 24px rgba(0,0,0,.5); --mast: #0a1120; --mast-fg: #eef2fa; color-scheme: dark;
 } }
 :root[data-theme="dark"] {
-  --bg: #111316; --panel: #1a1d21; --fg: #eceae4; --fg-muted: #a3a6ab; --line: #2c3036;
-  --ok: #4fbf86; --warn: #e0a040; --bad: #ef6b5e; --crit: #e66767;
-  --s1: #3987e5; --s2: #d95926; --muted-mark: #4a4e55; --grid: #23272c; --axis: #4a4e55;
-  --pop: #22262b; --pop-border: #353a41; --shadow: 0 6px 24px rgba(0,0,0,.45); --mast: #0a0b0d; --mast-fg: #eceae4; color-scheme: dark;
+  --bg: #0e1628; --panel: #1a2540; --fg: #eef2fa; --fg-muted: #9aa7c2; --line: #26324f;
+  --ok: #2fd07a; --warn: #f2b14c; --bad: #ef6b6b; --crit: #ef6b6b;
+  --s1: #3987e5; --s2: #d95926; --muted-mark: #3a4766; --grid: #222e4a; --axis: #3a4766;
+  --pop: #1f2b49; --pop-border: #33416a; --shadow: 0 6px 24px rgba(0,0,0,.5); --mast: #0a1120; --mast-fg: #eef2fa; color-scheme: dark;
 }
 * { box-sizing: border-box; }
 html { -webkit-text-size-adjust: 100%; }
@@ -42,9 +42,11 @@ img { max-width: 100%; }
 [hidden] { display: none !important; }
 .mast { background: var(--mast); color: var(--mast-fg); }
 .mast-in, .wrap, .foot-in { max-width: 1320px; margin-inline: auto; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
-.mast-in { padding-block: 12px; display: grid; grid-template-columns: 1fr auto; align-items: center; gap: 4px 14px; }
+.mast-in { padding-block: 12px; display: grid; grid-template-columns: 1fr auto auto; align-items: center; gap: 4px 14px; }
 .mast-name { grid-row: 1; grid-column: 1; }
-.mast-theme { grid-row: 1; grid-column: 2; }
+.mast-by { grid-row: 1; grid-column: 2; font-size: var(--cds-font-size-caption); opacity: .85; }
+.mast-theme { grid-row: 1; grid-column: 3; }
+@media (max-width: 560px) { .mast-by { grid-row: 3; grid-column: 1 / -1; } }
 .mast-name { font-family: var(--font-serif); font-weight: 600; font-size: 1.05rem; letter-spacing: .01em; }
 .mast-desc { grid-row: 2; grid-column: 1 / -1; font-size: var(--cds-font-size-caption); opacity: .78; max-width: 80ch; }
 .mast-theme { font: inherit; font-size: var(--cds-font-size-caption); background: transparent; color: inherit; border: 1px solid rgba(255,255,255,.3); border-radius: 999px; padding: 2px 10px; cursor: pointer; }
@@ -164,6 +166,75 @@ img { max-width: 100%; }
 .lx-hubcard:hover .lx-hub-go { color: var(--color-fg); }
 .lx-hubcard.lx-hub-main { grid-column: 1 / -1; min-height: 0; }
 .lx-tabs { position: sticky; top: env(safe-area-inset-top, 0px); z-index: 4; background: var(--color-bg); padding-top: 4px; }
+.dz { --dz-track: color-mix(in srgb, var(--color-fg) 12%, transparent); --dz-row: color-mix(in srgb, var(--color-fg) 4%, transparent);
+  --dz-c1: #3b82f6; --dz-c2: #f2c94c; --dz-c3: #f2994a; --dz-c4: #9b8cf2; --dz-c5: #27ae60; --dz-c6: #2fd07a; --dz-c7: #eb5757; --dz-c8: #8a94a6; --dz-c9: #56b4e9;
+  display: grid; gap: 12px; grid-template-columns: minmax(0, 1fr) minmax(0, 2fr) minmax(0, 1.5fr);
+  grid-template-areas: "nov feed donut" "gauge feed donut" "part part rank" "pol pol minis" "day day day"; }
+.dz-tile { background: var(--color-panel); border: 1px solid var(--color-border-line); border-radius: 12px; padding: 16px 18px; min-width: 0; display: flex; flex-direction: column; gap: 10px; cursor: pointer; transition: border-color .15s; }
+.dz-tile:hover { border-color: var(--color-fg-muted); }
+.dz-tile:focus-visible, .dz-mini:focus-visible, .dz-person:focus-visible { outline: 2px solid var(--color-fg); outline-offset: 2px; }
+.dz-a-nov { grid-area: nov; } .dz-a-gauge { grid-area: gauge; } .dz-a-feed { grid-area: feed; } .dz-a-donut { grid-area: donut; } .dz-a-part { grid-area: part; } .dz-a-rank { grid-area: rank; } .dz-a-pol { grid-area: pol; } .dz-minis { grid-area: minis; } .dz-a-day { grid-area: day; }
+.dz-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 8px; }
+.dz-head h3 { margin: 0; font-size: 1rem; font-weight: 700; }
+.dz-sub { display: block; font-size: 11px; color: var(--color-fg-muted); margin-top: 2px; }
+.dz-open { font-size: 11px; color: var(--color-fg-muted); white-space: nowrap; opacity: 0; transition: opacity .15s; }
+.dz-tile:hover .dz-open, .dz-tile:focus-visible .dz-open { opacity: 1; }
+.dz-accent { background: var(--color-ok); border-color: transparent; color: var(--color-bg); }
+.dz-accent .dz-sub, .dz-accent .dz-open, .dz-accent .dz-note { color: var(--color-bg); opacity: .8; }
+.dz-big { font-size: 4rem; font-weight: 700; line-height: 1; text-align: center; font-variant-numeric: tabular-nums; margin: 6px 0 2px; }
+.dz-note { font-size: 12px; color: var(--color-fg-muted); text-align: center; }
+.dz-gauge-v { font-size: 34px; font-weight: 700; fill: var(--color-ok) !important; }
+.dz-gauge-s { font-size: 11px; }
+svg.dz-gauge { max-width: 220px; align-self: center; }
+.dz-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+.dz-table th { font-size: 10px; letter-spacing: .06em; text-transform: uppercase; color: var(--color-fg-muted); font-weight: 600; text-align: left; padding: 4px 8px; }
+.dz-table td { padding: 7px 8px; }
+.dz-table tbody tr:nth-child(odd) td { background: var(--dz-row); }
+.dz-table tfoot td { border-top: 1px solid var(--color-border-line); padding-top: 9px; font-size: 12px; }
+.dz-n { width: 1.6rem; color: var(--color-fg-muted); font-variant-numeric: tabular-nums; }
+.dz-r { text-align: right !important; white-space: nowrap; }
+.dz-t { font-weight: 600; overflow: hidden; text-overflow: ellipsis; max-width: 0; width: 100%; white-space: nowrap; }
+.dz-b { font-weight: 700; }
+.dz-num { font-variant-numeric: tabular-nums; }
+.dz-mut { color: var(--color-fg-muted); font-size: 12px; }
+.dz-scroll { overflow-x: auto; }
+.dz-pill-trunc { max-width: 15rem; overflow: hidden; text-overflow: ellipsis; vertical-align: middle; }
+.dz-table td.dz-hide { white-space: nowrap; }
+.dz-pill { display: inline-block; font-size: 11px; font-weight: 700; padding: 2px 8px; border-radius: 4px; white-space: nowrap; }
+.dz-pill-bad { background: var(--dz-c7); color: #fff; } .dz-pill-warn { background: var(--dz-c3); color: #1b1300; } .dz-pill-ok { background: var(--color-ok); color: var(--color-bg); } .dz-pill-mut { background: var(--dz-track); color: var(--color-fg); }
+.dz-donutwrap { display: grid; grid-template-columns: minmax(110px, 160px) minmax(0, 1fr); gap: 16px; align-items: center; flex: 1; }
+svg.dz-donut { width: 100%; height: auto; }
+.dz-donut-v { font-size: 34px; font-weight: 700; fill: var(--color-fg) !important; }
+.dz-legend { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 5px; font-size: 12.5px; }
+.dz-legend li { display: grid; grid-template-columns: 10px 1fr auto; gap: 8px; align-items: center; }
+.dz-legend li.dz-zero { opacity: .4; }
+.dz-legend b { font-variant-numeric: tabular-nums; }
+.dz-legend-row { flex-direction: row; flex-wrap: wrap; gap: 6px 16px; }
+.dz-legend-row li { grid-template-columns: 10px auto auto; }
+.dz-sw { width: 10px; height: 10px; border-radius: 2px; }
+.dz-people { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; margin-block: auto; }
+.dz-person { font: inherit; color: inherit; background: none; border: 0; cursor: pointer; display: flex; flex-direction: column; align-items: center; gap: 4px; text-align: center; min-width: 0; }
+.dz-av { position: relative; width: 64px; height: 64px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.3rem; font-weight: 700; background: color-mix(in srgb, var(--dz-c1) 35%, var(--color-panel)); border: 3px solid var(--color-fg-muted); }
+.dz-first .dz-av { border-color: var(--dz-c2); width: 74px; height: 74px; }
+.dz-rank { position: absolute; bottom: -6px; left: 50%; transform: translateX(-50%); width: 20px; height: 20px; border-radius: 50%; font-size: 11px; display: flex; align-items: center; justify-content: center; background: var(--color-fg); color: var(--color-bg); }
+.dz-first .dz-rank { background: var(--dz-c2); color: #1b1300; }
+.dz-pn { font-size: 12.5px; font-weight: 600; margin-top: 6px; }
+.dz-pc { font-size: 10.5px; color: var(--color-fg-muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 100%; }
+.dz-pv { font-size: 1.5rem; }
+.dz-kpis { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px; }
+.dz-kpis div { display: flex; flex-direction: column; }
+.dz-kpis b { font-size: 1.7rem; font-weight: 700; font-variant-numeric: tabular-nums; }
+.dz-kpis span { font-size: 11px; color: var(--color-fg-muted); }
+.dz-stack { display: flex; gap: 2px; height: 12px; border-radius: 6px; overflow: hidden; }
+.dz-stack i { display: block; height: 100%; }
+.dz-minis { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; cursor: default; padding: 12px; }
+.dz-mini { border-radius: 8px; padding: 10px 12px; background: var(--dz-row); cursor: pointer; display: flex; flex-direction: column; gap: 2px; }
+.dz-mini:hover { background: var(--dz-track); }
+.dz-mini b { font-size: 1.7rem; font-weight: 700; font-variant-numeric: tabular-nums; }
+.dz-mini .dz-note { text-align: left; font-size: 11px; }
+.dz-lead { font-size: 1.05rem; font-weight: 700; margin: 0; }
+@media (max-width: 1000px) { .dz { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); grid-template-areas: "nov gauge" "feed feed" "donut donut" "part part" "rank rank" "pol pol" "minis minis" "day day"; } }
+@media (max-width: 560px) { .dz { grid-template-columns: minmax(0, 1fr); grid-template-areas: "nov" "gauge" "feed" "donut" "part" "rank" "pol" "minis" "day"; } .dz-hide { display: none; } .dz-pill-trunc { max-width: 6.5rem; } .dz-kpis { grid-template-columns: 1fr 1fr; } .dz-donutwrap { grid-template-columns: 110px 1fr; } }
 [data-dash-source-state=refreshing] { opacity: .5; transition: opacity var(--cds-dur-slow); }
 @media (max-width: 640px) { .lx-hide-n { display: none; } .lx-item { grid-template-columns: 1fr; } .lx-kv { grid-template-columns: 1fr; } }
 
@@ -173,6 +244,7 @@ img { max-width: 100%; }
 <div class="mast"><div class="mast-in">
   <span class="mast-name">Radar Lula 4</span>
   <span class="mast-desc">Monitor da formação do novo governo e das prioridades do 4º mandato. Quem fica, quem sai e quem está sendo considerado em cada pasta, o espaço dos partidos e as mudanças de políticas públicas, sempre com fonte e nível de confirmação. Atualizado a cada 3 horas.</span>
+  <span class="mast-by">Feito por Júlia Santos</span>
   <button class="mast-theme" id="theme-btn" type="button" aria-label="Alternar tema claro ou escuro">Tema</button>
 </div></div>
 <main class="wrap">
@@ -204,8 +276,7 @@ img { max-width: 100%; }
   <div class="lx-chips" id="lx-quick" aria-label="Atalhos de filtro"></div>
 
   <section id="painel" data-pane="painel" class="lx" hidden>
-    <div class="lx-hub-head"><p class="lx-hub-lead lx-muted">Escolha um módulo para abrir. Os números se atualizam a cada checagem automática.</p></div>
-    <div class="lx-hub" id="hub" data-source="painel indicadores t_consolidado"></div>
+    <div class="dz" id="hub" data-source="painel indicadores t_consolidado t_evento t_partido g_partidos"></div>
   </section>
 
   <section id="inicio" data-pane="inicio" class="lx" hidden>
@@ -533,6 +604,7 @@ dash.calc('painel', {
       pessoas: t_pessoa.length, partidos: t_partido.length, transicao: t_transicao.length,
       reestr: t_reestr.length, politicas: t_politica.length, politicas_status: cont(t_politica, 'status'),
       eventos: t_evento.length, ultimo_evento: ultEv.titulo || '', ultimo_evento_data: ultEv.data || '',
+      ranking: t_pessoa.map((pp) => ({ nome: pp.nome, cargo: pp.cargo_atual, n: t_evento.filter((e) => e.nome === pp.nome).length + t_nome.filter((n) => n.nome === pp.nome).length })).filter((r) => r.n > 0).sort((a, b) => b.n - a.n || a.nome.localeCompare(b.nome, 'pt')).slice(0, 3),
     }];
   },
 });
@@ -997,25 +1069,74 @@ dash.calc('painel', {
     const box = document.getElementById('hub'); const P = rows('painel'); const I = rows('indicadores');
     if (!P || !I) { if (failed('base')) box.replaceChildren(el('div', 'lx-fail', 'Failed to load')); return; }
     const p = P[0], ind = I[0];
+    const orgaos = rows('t_orgao') || []; const ev = rows('t_evento') || []; const parts = rows('t_partido') || []; const gp = rows('g_partidos') || []; const pols = rows('t_politica') || [];
     const cons = (rows('t_consolidado') || []).slice().sort((a, b) => (a.data < b.data ? 1 : -1))[0];
-    const ramp6 = ramp(6);
-    const nomeCor = { '🔵 NOME MENCIONADO': ramp6[0], '🟡 NOME EM CONSIDERAÇÃO': ramp6[1], '🟠 NEGOCIAÇÃO EM CURSO': ramp6[2], '🟣 CONVITE REPORTADO': ramp6[3], '🟢 ESCOLHA CONFIRMADA': ramp6[4], '✅ NOMEADO/OFICIALIZADO': ramp6[5] };
-    const bar = (counts, colorOf, order) => { const tot = Object.values(counts || {}).reduce((a, b) => a + b, 0) || 1; const b = el('div', 'lx-hub-bar'); order.filter((k) => counts && counts[k]).forEach((k) => { const i = el('i'); i.style.width = (100 * counts[k] / tot) + '%'; i.style.background = colorOf(k); i.title = `${k}: ${counts[k]}`; b.append(i); }); b.setAttribute('role', 'img'); b.setAttribute('aria-label', order.filter((k) => counts && counts[k]).map((k) => `${k.replace(/^\S+\s/, '').toLowerCase()}: ${counts[k]}`).join(', ')); return b; };
-    const nums = (...pairs) => el('div', 'lx-hub-nums', ...pairs.map(([v, l]) => el('div', '', el('b', '', String(v)), el('span', '', l))));
-    const card = (tab, kicker, title, desc, numsNode, extra, main) => { const b = el('button', 'lx-hubcard' + (main ? ' lx-hub-main' : ''), el('span', 'lx-hub-k', kicker), el('h3', '', title), desc ? el('p', 'lx-muted', desc) : null, extra || null, numsNode, el('span', 'lx-hub-go', 'Abrir →')); b.type = 'button'; b.addEventListener('click', () => { st.tab = tab; st.quick = ''; dash.setLink(tab); draw(); window.scrollTo({ top: 0 }); }); return b; };
-    const POLORD = ['⚪ ANUNCIADO', '🟡 EM FORMULAÇÃO', '🟠 EM NEGOCIAÇÃO', '🔵 EM IMPLEMENTAÇÃO', '🟢 IMPLEMENTADO', '⏸ SEM AVANÇO', '🔴 ABANDONADO/REVISTO'];
-    const polCor = (k) => /IMPLEMENTA/.test(k) ? 'var(--color-ok)' : /ABANDONADO/.test(k) ? 'var(--color-bad)' : /NEGOCIAÇÃO|FORMULAÇÃO/.test(k) ? dash.colors[0] : 'var(--cds-chart-muted)';
-    box.replaceChildren(
-      card('inicio', 'Visão geral', cons ? cons.titulo : 'Início', p.novidades ? `${p.novidades} novidade(s) na última checagem (${dt(p.ultima_checagem)}). Mapa da Esplanada, indicadores, leitura política e consolidado do dia.` : `Sem novidades na última checagem (${dt(p.ultima_checagem)}). Mapa da Esplanada, indicadores, leitura política e consolidado do dia.`, nums([p.novidades, 'novidades'], [p.novidades_alta, 'de alta relevância'], [ind.em_consideracao, 'nomes em consideração'], [ind.abertos, 'cargos em aberto']), null, true),
-      card('composicao', 'Eixo 1', 'Composição ministerial', 'Quem fica, quem sai e quem está sendo considerado em cada posição.', nums([p.nomes, 'nomes em circulação'], [ind.definidos, 'ministérios definidos'], [ind.saidas, 'saídas confirmadas']), bar(p.nomes_status, (k) => nomeCor[k] || 'var(--cds-chart-muted)', Object.keys(nomeCor).concat(['🔴 DESCARTADO', '↩ RECUSOU', '⬛ SAÍDA CONFIRMADA']))),
-      card('orgaos', 'Páginas por órgão', 'Órgãos', 'Titular, nomes, cargos, políticas e relatório de alterações de cada órgão.', nums([p.orgaos, 'órgãos acompanhados'], [p.orgaos_mov, 'com movimentação'])),
-      card('transicao', 'Eixo 2', 'Transição', 'Quem conduz a preparação do novo mandato.', nums([p.transicao, 'registros'])),
-      card('politica-partidaria', 'Eixo 3', 'Composição política', 'Espaço dos partidos, negociações e balanço de forças.', nums([p.partidos, 'partidos'], [ind.em_negociacao, 'ministérios em negociação'])),
-      card('politicas', 'Eixo 4', 'Prioridades e políticas públicas', 'Promessas, diretrizes e mudanças de políticas do 4º mandato.', nums([p.politicas, 'itens'], [ind.novas, 'novas políticas'], [ind.revisao, 'em revisão']), bar(p.politicas_status, polCor, POLORD)),
-      card('reestruturacao', 'Eixo 5', 'Reestruturação administrativa', 'Criação, fusão e redistribuição de pastas e competências.', nums([p.reestr, 'mudanças em acompanhamento'])),
-      card('linha-do-tempo', 'Cronologia', 'Linha do tempo', p.ultimo_evento ? `Último registro (${dd(p.ultimo_evento_data)}): ${p.ultimo_evento}` : 'Formação do governo em ordem cronológica.', nums([p.eventos, 'movimentações registradas'])),
-      card('pessoas', 'Perfis', 'Busca por pessoa', 'Trajetória, cargos considerados, articuladores e cronologia de cada nome.', nums([p.pessoas, 'perfis'])),
-    );
+    const go = (tab) => { st.tab = tab; st.quick = ''; dash.setLink(tab); draw(); window.scrollTo({ top: 0 }); };
+    const tile = (area, tab, title, sub, ...kids) => {
+      const t = el('div', 'dz-tile dz-a-' + area, el('div', 'dz-head', el('div', '', el('h3', '', title), sub ? el('span', 'dz-sub', sub) : null), el('span', 'dz-open', 'Abrir →')), ...kids);
+      t.tabIndex = 0; t.setAttribute('role', 'link'); t.setAttribute('aria-label', `${title}: abrir`);
+      t.addEventListener('click', (e) => { if (e.target.closest('[data-pessoa]')) return; go(tab); });
+      t.addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); go(tab); } });
+      return t;
+    };
+    // 1. destaque
+    const nov = tile('nov', 'inicio', 'Novidades', 'Última checagem · ' + dt(p.ultima_checagem), el('div', 'dz-big', String(p.novidades)), el('span', 'dz-note', p.novidades_alta ? `${p.novidades_alta} de alta relevância` : 'nenhuma de alta relevância'));
+    nov.classList.add('dz-accent');
+    // 2. medidor
+    const pct = p.orgaos ? p.orgaos_mov / p.orgaos : 0;
+    const W = 200, H = 130, R = 78, cx = 100, cy = 100, a0 = -Math.PI * 0.75 - Math.PI / 2 + Math.PI / 2, span = Math.PI * 1.5;
+    const arc = d3.arc().innerRadius(R - 12).outerRadius(R).cornerRadius(6);
+    const svg = d3.create('svg').attr('class', 'lx-svg dz-gauge').attr('viewBox', `0 0 ${W} ${H}`).attr('width', '100%').attr('role', 'img').attr('aria-label', `${Math.round(pct * 100)}% dos órgãos com movimentação`);
+    const g = svg.append('g').attr('transform', `translate(${cx},${cy})`);
+    g.append('path').attr('d', arc({ startAngle: -span / 2, endAngle: span / 2 })).attr('fill', 'var(--dz-track)');
+    if (pct > 0) g.append('path').attr('d', arc({ startAngle: -span / 2, endAngle: -span / 2 + span * pct })).attr('fill', 'var(--color-ok)');
+    g.append('text').attr('text-anchor', 'middle').attr('dy', '-0.1em').attr('class', 'dz-gauge-v').text(Math.round(pct * 100) + '%');
+    g.append('text').attr('text-anchor', 'middle').attr('dy', '1.5em').attr('class', 'dz-gauge-s').text(`${p.orgaos_mov} de ${p.orgaos} órgãos`);
+    const gauge = tile('gauge', 'orgaos', 'Esplanada em movimento', 'Órgãos com alguma movimentação registrada', svg.node());
+    // 3. últimas movimentações
+    const last = ev.slice().sort((a, b) => (a.data < b.data ? 1 : -1)).slice(0, 8);
+    const sig = (id) => { const o = orgaos.find((x) => x.id === id); if (!o) return '—'; if (o.id === 'a-definir') return 'A definir'; return o.sigla && o.sigla !== '—' ? o.sigla : o.nome; };
+    const relCls = (r) => /ALTA/.test(r) ? 'dz-pill-bad' : /MÉDIA/.test(r) ? 'dz-pill-warn' : 'dz-pill-mut';
+    const tb = el('table', 'dz-table', el('thead', '', el('tr', '', el('th', 'dz-n', '#'), el('th', '', 'Movimentação'), el('th', 'dz-hide', 'Órgão'), el('th', 'dz-r', 'Relevância'))), el('tbody', '', ...last.map((e, i) => el('tr', '', el('td', 'dz-n', String(i + 1)), el('td', 'dz-t', e.titulo), el('td', 'dz-hide', sig(e.orgao_id)), el('td', 'dz-r', el('span', 'dz-pill ' + relCls(e.relevancia), e.relevancia.replace(/^\S+\s/, '').toLowerCase()))))));
+    const feed = tile('feed', 'linha-do-tempo', 'Últimas movimentações', 'Mais recentes primeiro', tb);
+    // 4. rosca de status dos nomes
+    const ST = [['🔵 NOME MENCIONADO', 'Mencionado'], ['🟡 NOME EM CONSIDERAÇÃO', 'Em consideração'], ['🟠 NEGOCIAÇÃO EM CURSO', 'Negociação'], ['🟣 CONVITE REPORTADO', 'Convite'], ['🟢 ESCOLHA CONFIRMADA', 'Escolha confirmada'], ['✅ NOMEADO/OFICIALIZADO', 'Nomeado'], ['🔴 DESCARTADO', 'Descartado'], ['↩ RECUSOU', 'Recusou'], ['⬛ SAÍDA CONFIRMADA', 'Saída confirmada']];
+    const DC = ['var(--dz-c1)', 'var(--dz-c2)', 'var(--dz-c3)', 'var(--dz-c4)', 'var(--dz-c5)', 'var(--dz-c6)', 'var(--dz-c7)', 'var(--dz-c8)', 'var(--dz-c9)'];
+    const counts = ST.map(([k, l], i) => ({ k, l, n: (p.nomes_status || {})[k] || 0, c: DC[i] }));
+    const tot = d3.sum(counts, (d) => d.n);
+    const dsvg = d3.create('svg').attr('class', 'lx-svg dz-donut').attr('viewBox', '0 0 160 160').attr('width', '100%').attr('role', 'img').attr('aria-label', counts.filter((d) => d.n).map((d) => `${d.l}: ${d.n}`).join(', '));
+    const dg = dsvg.append('g').attr('transform', 'translate(80,80)');
+    const pie = d3.pie().sort(null).value((d) => d.n).padAngle(0.03)(counts.filter((d) => d.n));
+    const darc = d3.arc().innerRadius(52).outerRadius(70).cornerRadius(3);
+    dg.selectAll('path').data(pie).join('path').attr('d', darc).attr('fill', (d) => d.data.c);
+    if (!tot) dg.append('circle').attr('r', 61).attr('fill', 'none').attr('stroke', 'var(--dz-track)').attr('stroke-width', 18);
+    dg.append('text').attr('text-anchor', 'middle').attr('dy', '0.35em').attr('class', 'dz-donut-v').text(tot);
+    const legend = el('ul', 'dz-legend', ...counts.map((d) => el('li', d.n ? '' : 'dz-zero', Object.assign(el('span', 'dz-sw'), { style: `background:${d.c}` }), el('span', 'dz-ll', d.l), el('b', '', String(d.n)))));
+    const donut = tile('donut', 'composicao', 'Nomes por status', 'Da menção à nomeação', el('div', 'dz-donutwrap', dsvg.node(), legend));
+    // 5. partidos
+    const trend = (t) => /perd/i.test(t || '') ? 'dz-pill-warn' : /ganh|alta/i.test(t || '') ? 'dz-pill-ok' : 'dz-pill-mut';
+    const prow = parts.map((x) => { const c = gp.find((y) => y.partido === x.partido) || { titulares: 0, nomes: 0 }; return { ...x, titulares: c.titulares, nomes: c.nomes }; }).sort((a, b) => (b.titulares + b.nomes) - (a.titulares + a.nomes) || a.partido.localeCompare(b.partido, 'pt'));
+    const ptb = el('table', 'dz-table', el('thead', '', el('tr', '', el('th', 'dz-n', '#'), el('th', '', 'Partido'), el('th', 'dz-r', 'Titulares'), el('th', 'dz-r', 'Nomes'), el('th', 'dz-hide', 'Situação'), el('th', 'dz-r', 'Tendência'))),
+      el('tbody', '', ...prow.map((x, i) => el('tr', '', el('td', 'dz-n', String(i + 1)), el('td', 'dz-b', x.partido), el('td', 'dz-r dz-num', String(x.titulares)), el('td', 'dz-r dz-num', String(x.nomes)), el('td', 'dz-hide dz-mut', x.situacao), el('td', 'dz-r', Object.assign(el('span', 'dz-pill dz-pill-trunc ' + trend(x.tendencia), x.tendencia), { title: x.tendencia }))))),
+      el('tfoot', '', el('tr', '', el('td', ''), el('td', 'dz-b', 'Total'), el('td', 'dz-r dz-num', String(d3.sum(prow, (x) => x.titulares))), el('td', 'dz-r dz-num', String(d3.sum(prow, (x) => x.nomes))), el('td', 'dz-hide'), el('td', ''))));
+    const partidos = tile('part', 'politica-partidaria', 'Composição política', 'Titulares filiados e nomes em circulação por partido', el('div', 'dz-scroll', ptb));
+    // 6. mais citados
+    const rank = (p.ranking || []).slice(0, 3);
+    const people = el('div', 'dz-people', ...rank.map((r, i) => { const ini = r.nome.split(/\s+/).filter((w) => /^\p{Lu}/u.test(w)).map((w) => w[0]).slice(0, 2).join(''); const b = el('button', 'dz-person' + (i === 0 ? ' dz-first' : ''), el('span', 'dz-av', ini, el('span', 'dz-rank', String(i + 1))), el('span', 'dz-pn', r.nome), el('span', 'dz-pc', r.cargo || ''), el('b', 'dz-pv', String(r.n))); b.type = 'button'; b.dataset.pessoa = r.nome; return b; }));
+    const citados = tile('rank', 'pessoas', 'Nomes mais citados', 'Movimentações registradas por pessoa', people);
+    // 7. políticas
+    const PST = [['⚪ ANUNCIADO', 'Anunciado', 'var(--dz-c9)'], ['🟡 EM FORMULAÇÃO', 'Em formulação', 'var(--dz-c2)'], ['🟠 EM NEGOCIAÇÃO', 'Em negociação', 'var(--dz-c3)'], ['🔵 EM IMPLEMENTAÇÃO', 'Em implementação', 'var(--dz-c1)'], ['🟢 IMPLEMENTADO', 'Implementado', 'var(--color-ok)'], ['⏸ SEM AVANÇO', 'Sem avanço', 'var(--dz-c8)'], ['🔴 ABANDONADO/REVISTO', 'Abandonado/revisto', 'var(--dz-c7)']];
+    const ps = PST.map(([k, l, c]) => ({ l, c, n: (p.politicas_status || {})[k] || 0 })).filter((d) => d.n);
+    const ptot = d3.sum(ps, (d) => d.n) || 1;
+    const sbar = el('div', 'dz-stack', ...ps.map((d) => { const i = el('i'); i.style.width = (100 * d.n / ptot) + '%'; i.style.background = d.c; i.title = `${d.l}: ${d.n}`; return i; }));
+    const pleg = el('ul', 'dz-legend dz-legend-row', ...ps.map((d) => el('li', '', Object.assign(el('span', 'dz-sw'), { style: `background:${d.c}` }), el('span', 'dz-ll', d.l), el('b', '', String(d.n)))));
+    const politicas = tile('pol', 'politicas', 'Prioridades e políticas', `${p.politicas} itens em acompanhamento`, el('div', 'dz-kpis', el('div', '', el('b', '', String(ind.novas)), el('span', '', 'novas políticas')), el('div', '', el('b', '', String(ind.revisao)), el('span', '', 'em revisão')), el('div', '', el('b', '', String(ind.promessas)), el('span', '', 'promessas')), el('div', '', el('b', '', String(ind.promessas_impl)), el('span', '', 'em implementação'))), sbar, pleg);
+    // 8. mini
+    const mini = (tab, label, v, s) => { const m = el('div', 'dz-mini', el('span', 'dz-sub', label), el('b', '', String(v)), el('span', 'dz-note', s)); m.tabIndex = 0; m.setAttribute('role', 'link'); m.addEventListener('click', (e) => { e.stopPropagation(); go(tab); }); m.addEventListener('keydown', (e) => { if (e.key === 'Enter') { e.stopPropagation(); go(tab); } }); return m; };
+    const minis = el('div', 'dz-tile dz-minis', mini('composicao', 'Cargos em aberto', ind.abertos, 'saída sinalizada, vago ou a criar'), mini('composicao', 'Em consideração', ind.em_consideracao, 'nomes avaliados de fato'), mini('reestruturacao', 'Reestruturação', p.reestr, 'mudanças administrativas'), mini('transicao', 'Transição', p.transicao, 'registros'));
+    // 9. leitura do dia
+    const day = tile('day', 'inicio', 'Leitura do dia', cons ? dd(cons.data) : '', el('p', 'dz-lead', cons ? cons.titulo : '—'), el('p', 'dz-mut', cons ? cons.leitura : ''));
+    box.replaceChildren(nov, feed, donut, gauge, partidos, citados, politicas, minis, day);
   }
 
   // ---------- draw ----------
@@ -1069,7 +1190,7 @@ dash.calc('painel', {
   const btn = document.getElementById('theme-btn');
   const root = document.documentElement;
   const isDark = () => root.dataset.theme ? root.dataset.theme === 'dark' : matchMedia('(prefers-color-scheme: dark)').matches;
-  try { const s = localStorage.getItem('tema'); if (s) root.dataset.theme = s; } catch (e) {}
+  let s0 = null; try { s0 = localStorage.getItem('tema'); } catch (e) {} root.dataset.theme = s0 || 'dark';
   const label = () => { btn.textContent = isDark() ? 'Tema claro' : 'Tema escuro'; };
   label();
   btn.addEventListener('click', () => { root.dataset.theme = isDark() ? 'light' : 'dark'; try { localStorage.setItem('tema', root.dataset.theme); } catch (e) {} label(); window.dash._emit(); });
