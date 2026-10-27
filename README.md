@@ -1,7 +1,5 @@
 # Tracker Lula 4
 
-Monitor da formação, da composição, da reorganização administrativa e das prioridades de políticas públicas do 4º mandato de Lula.
+📊 Tracker Lula 4: monitor da formação do novo governo e das prioridades do 4º mandato. Quem fica, quem sai e quem está sendo considerado em cada pasta, o espaço dos partidos e as mudanças de políticas públicas, sempre com fonte e nível de confirmação. Atualizado a cada 3 horas.
 
-Site: https://robotxp-hash.github.io/tracker-lula4
-
-A base (`data/base.json`) é atualizada automaticamente a cada 3 horas.
+**Acesse:** https://robotxp-hash.github.io/tracker-lula4
