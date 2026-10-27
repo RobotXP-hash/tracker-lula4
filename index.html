@@ -167,6 +167,19 @@ img { max-width: 100%; }
 .lx-evo .ev-now { stroke: var(--color-fg-muted); stroke-dasharray: 3 3; }
 .lx-evo .ev-dot { cursor: pointer; }
 .lx-evo .ev-dot:focus-visible { outline: 2px solid var(--color-fg); }
+
+.lx-evo .ev-ylab { font-size: 12px; fill: var(--color-fg-muted); }
+.lx-evo .ev-line { fill: none; stroke-width: 2.5; stroke-linejoin: round; transition: opacity .15s; }
+.lx-evo .ev-pt { stroke-width: 2.2; fill: var(--color-panel); transition: opacity .15s; }
+.lx-evo .ev-out { fill: color-mix(in srgb, var(--dz-c8) 10%, transparent); }
+.lx-evo-tit { margin: 0 0 6px; font-size: var(--cds-font-size-caption); }
+.lx-evo-tit b { font-weight: 600; }
+.lx-evo-leg { list-style: none; margin: 10px 0 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 15rem), 1fr)); gap: 6px 18px; }
+.lx-evo-leg li { display: grid; grid-template-columns: 26px 1fr; gap: 0 8px; align-items: start; cursor: pointer; border-radius: 6px; padding: 2px 4px; }
+.lx-evo-leg li:hover, .lx-evo-leg li[aria-pressed="true"] { background: color-mix(in srgb, var(--color-fg) 7%, transparent); }
+.lx-evo-leg svg { width: 26px; height: 14px; margin-top: 3px; }
+.lx-evo-leg .lg-n { font-weight: 600; font-size: var(--cds-font-size-caption); }
+.lx-evo-leg .lg-s { grid-column: 2; font-size: var(--cds-font-size-caption); color: var(--color-fg-muted); }
 .lx-evo-head { display: flex; flex-wrap: wrap; gap: var(--cds-gap-sm); align-items: center; justify-content: space-between; }
 .lx-evo-legs { display: flex; flex-direction: column; gap: 4px; }
 .lx-grid2 { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 24rem), 1fr)); gap: var(--cds-gap-md); }
@@ -478,8 +491,7 @@ svg.dz-donut { width: 100%; height: auto; }
   <section id="linha-do-tempo" data-pane="linha-do-tempo" class="lx" hidden>
     <div class="lx-card" id="evo-card" data-source="t_nome t_posicao t_evento">
       <div class="lx-evo-head"><h2>Evolução dos nomes por órgão</h2><select class="lx-in" id="evo-sel" aria-label="Órgão"></select></div>
-      <p class="lx-muted">Cada faixa é uma pessoa. A cor mostra o status em cada momento, da primeira menção até hoje; os pontos marcam cada registro (cheio quando o status muda, vazado quando chega informação nova sem mudança). A primeira faixa é a do titular atual. Passe o mouse ou toque nos pontos para ver a fonte.</p>
-      <div class="lx-evo-legs"><div class="lx-legend" id="evo-leg"></div><div class="lx-legend" id="evo-leg2"></div></div>
+      <p class="lx-muted">Cada linha é uma pessoa. Quanto mais alta, mais perto do cargo: da simples menção até a nomeação no Diário Oficial. Quem é descartado ou recusa desce para "fora da disputa". Cada círculo é um registro com fonte; passe o mouse ou toque para ver. Clique num nome da legenda para destacar a linha.</p>
       <div class="lx-evo" id="evo-box"></div>
     </div>
     <div class="lx-card">
@@ -970,7 +982,7 @@ dash.calc('painel', {
       el('div', '', el('div', 'lx-row', tag(o.tipo), tag(o.area)), el('h2', '', o.nome)),
       card('Titular atual', tit ? kv([['Nome', el('span', 'lx-b', tit.ocupante)], ['Partido', tit.partido_ocupante], ['Situação', tit.situacao_ocupante], ['Status da posição', tag(posStatus(tit, nomes), 'lx-strong')], ['Referência', tit.ocupante_ref], ['Próximo movimento', tit.proximo_movimento], ['Observação', tit.nota]]) : el('p', 'lx-empty', 'Sem posição titular cadastrada.')),
       card('Nomes para o órgão', N.length ? nomeTable() : el('p', 'lx-empty', 'Nenhum nome em circulação.')),
-      card('Evolução dos nomes', el('p', 'lx-muted lx-howto', 'Status de cada pessoa ao longo do tempo, da primeira menção até hoje. Passe o mouse ou toque nos pontos para ver a fonte.'), evoBox),
+      card('Evolução dos nomes', el('p', 'lx-muted lx-howto', 'Quanto mais alta a linha, mais perto do cargo, da menção à nomeação. Passe o mouse ou toque nos círculos para ver a fonte; clique num nome da legenda para destacar a linha.'), evoBox),
       card('Principais cargos abaixo do titular', outros.length ? el('ul', '', ...outros.map((p) => el('li', '', `${p.cargo}: ${p.ocupante} (${p.situacao_ocupante})`))) : el('p', 'lx-empty', 'Ainda não mapeados. Secretarias-executivas, secretarias nacionais e entidades vinculadas entram aqui conforme surgirem movimentações.')),
       card('Prioridades e políticas públicas', polBlock),
       card('Alterações identificadas', E.length ? el('div', 'lx-feed', ...E.map((e) => evItem(e, orgaos, true))) : el('p', 'lx-empty', 'Nada registrado.')),
@@ -1330,45 +1342,72 @@ dash.calc('painel', {
   function drawEvolucao(box, orgId, pos, nomes, ev, orgaos) {
     if (!box) return;
     const lanes = evoLanes(orgId, pos, nomes, ev);
-    if (!lanes.some((l) => !l.titular) && !(lanes[0] && lanes[0].pts.length)) { box.replaceChildren(el('p', 'lx-empty', 'Ainda não há nomes nem movimentações registradas para este órgão.')); return; }
-    const W = Math.max(300, box.clientWidth || 640); const M = { l: 6, r: 14, t: 6, b: 26 }; const LH = 44;
-    const H = M.t + lanes.length * LH + M.b;
-    const allT = lanes.flatMap((l) => [...l.segs.map((s) => s.a).filter(Boolean), ...l.pts.map((p) => p.t)]);
-    const now = new Date(); let t0 = d3.min(allT) || new Date(now - 86400000);
-    if (now - t0 < 6 * 3600000) t0 = new Date(now - 6 * 3600000);
-    const pad = (now - t0) * 0.03; const x = d3.scaleTime().domain([new Date(+t0 - pad), now]).range([M.l, W - M.r]);
+    const tit = lanes.find((l) => l.titular); const S = lanes.filter((l) => !l.titular);
+    const titP = tit ? (() => { const last = tit.segs[tit.segs.length - 1]; return el('p', 'lx-evo-tit', 'Titular atual: ', el('b', '', tit.nome), ` · ${last.s}${last.a ? ' desde ' + new Intl.DateTimeFormat('pt-BR', { timeZone: tz, day: '2-digit', month: '2-digit' }).format(last.a) : ''}`); })() : null;
+    if (!S.length) { box.replaceChildren(...[titP, el('p', 'lx-empty', 'Nenhum nome em circulação para este órgão até agora.')].filter(Boolean)); return; }
+    const fDM = new Intl.DateTimeFormat('pt-BR', { timeZone: tz, day: '2-digit', month: '2-digit' });
+    const NIV = ['Fora da disputa', 'Mencionado', 'Em consideração', 'Negociação', 'Convite', 'Escolha confirmada', 'Nomeado'];
+    const lvl = (s) => /DESCARTADO|RECUSOU/.test(s) ? 0 : Math.max(1, EVO_ETAPAS.indexOf(s));
+    const PAL = ['#3987e5', '#eb6834', '#2fb380', '#c05bd9', '#e3b23c', '#45c1d6', '#e2577f', '#8fbf3f', '#9b8cf0', '#c48a5a', '#5f9ea0', '#d4a5c9'];
+    const W = Math.max(300, box.clientWidth || 640); const narrow = W < 520;
+    const M = { l: narrow ? 116 : 128, r: 16, t: 14, b: 34 }; const Hp = narrow ? 230 : 290; const H = M.t + Hp + M.b;
+    const now = new Date();
+    const allT = S.flatMap((l) => [...l.segs.map((s) => s.a).filter(Boolean), ...l.pts.map((q) => q.t)]);
+    let t0 = d3.min(allT) || new Date(now - 86400000); if (now - t0 < 6 * 3600000) t0 = new Date(now - 6 * 3600000);
+    const pad = (now - t0) * 0.04;
+    const x = d3.scaleTime().domain([new Date(+t0 - pad), now]).range([M.l, W - M.r]);
+    const y = d3.scaleLinear().domain([-0.4, 6.4]).range([M.t + Hp, M.t]);
     const span = (now - t0) / 86400000;
-    const fTick = new Intl.DateTimeFormat('pt-BR', span < 4 ? { timeZone: tz, day: '2-digit', month: '2-digit', hour: '2-digit' } : { timeZone: tz, day: '2-digit', month: '2-digit' });
-    const ticks = span < 4 ? x.ticks(d3.timeHour.every(span < 1.5 ? 6 : 12)) : x.ticks(Math.max(2, Math.floor(W / 90)));
+    const fTick = new Intl.DateTimeFormat('pt-BR', span < 4 ? { timeZone: tz, day: '2-digit', month: '2-digit', hour: '2-digit' } : { timeZone: tz, day: '2-digit', month: 'short' });
+    const ticks = span < 4 ? x.ticks(d3.timeHour.every(span < 1.5 ? 6 : 12)) : x.ticks(Math.max(2, Math.floor((W - M.l) / 90)));
+    const n = S.length; const gap = Hp / 6.8; const off = (i) => (i - (n - 1) / 2) * Math.min(6, (0.7 * gap) / Math.max(1, n));
     const svg = d3.create('svg').attr('viewBox', `0 0 ${W} ${H}`).attr('height', H).attr('role', 'img')
-      .attr('aria-label', `Evolução de ${lanes.length} faixa(s) para ${orgName(orgaos, orgId)}: ` + lanes.map((l) => `${l.nome}, ${l.rotulo}`).join('; '));
-    const g = svg.append('g');
-    g.selectAll('line.ev-grid').data(ticks).join('line').attr('class', 'ev-grid').attr('x1', (d) => x(d)).attr('x2', (d) => x(d)).attr('y1', M.t).attr('y2', H - M.b);
-    const ax = svg.append('g').attr('class', 'ev-axis').attr('transform', `translate(0,${H - M.b + 4})`);
-    ax.selectAll('text').data(ticks.filter((d, i, a) => (i === 0 || x(d) - x(a[i - 1]) > 70) && x(now) - x(d) > 56)).join('text').attr('x', (d) => x(d)).attr('y', 12).attr('text-anchor', 'middle').text((d) => fTick.format(d).replace(',', '') + (span < 4 ? 'h' : ''));
-    g.append('line').attr('class', 'ev-now').attr('x1', x(now)).attr('x2', x(now)).attr('y1', M.t).attr('y2', H - M.b);
-    ax.append('text').attr('x', x(now)).attr('y', 12).attr('text-anchor', 'end').text('agora');
-    lanes.forEach((l, i) => {
-      const y = M.t + i * LH; const lg = g.append('g').attr('transform', `translate(0,${y})`);
-      const tx = lg.append('text').attr('x', M.l).attr('y', 13);
-      tx.append('tspan').attr('class', 'ev-name').text(l.nome);
-      tx.append('tspan').attr('class', 'ev-st').attr('dx', 8).text(l.rotulo);
-      const cor = l.titular ? titCor : evoCor;
-      lg.selectAll('rect').data(l.segs).join('rect').attr('x', (s) => x(s.a || x.domain()[0])).attr('width', (s) => Math.max(3, x(s.b) - x(s.a || x.domain()[0]))).attr('y', 22).attr('height', 10).attr('rx', 3).attr('fill', (s) => cor(s.s)).attr('opacity', (s) => s.a ? 1 : 0.45)
-        .append('title').text((s) => `${l.titular ? s.s : lc(s.s)}: ${s.a ? dt(s.a.toISOString()) : 'antes do registro'} → ${s.b >= now - 60000 ? 'agora' : dt(s.b.toISOString())}`);
-      if (l.fim) lg.append('text').attr('x', x(l.fim) + 6).attr('y', 32).attr('class', 'ev-st').text('saiu da disputa');
+      .attr('aria-label', `Evolução dos nomes para ${orgName(orgaos, orgId)}: ` + S.map((l) => `${l.nome}, ${l.rotulo}`).join('; '));
+    svg.append('rect').attr('class', 'ev-out').attr('x', M.l).attr('width', W - M.l - M.r).attr('y', y(0.5)).attr('height', y(-0.4) - y(0.5));
+    const gy = svg.append('g');
+    NIV.forEach((lab, i) => {
+      gy.append('line').attr('class', 'ev-grid').attr('x1', M.l).attr('x2', W - M.r).attr('y1', y(i)).attr('y2', y(i));
+      gy.append('text').attr('class', 'ev-ylab').attr('x', M.l - 8).attr('y', y(i)).attr('dy', '0.32em').attr('text-anchor', 'end').attr('font-size', narrow ? 10 : 12).text(lab);
+    });
+    const ax = svg.append('g').attr('class', 'ev-axis').attr('transform', `translate(0,${M.t + Hp + 8})`);
+    ax.append('line').attr('x1', M.l).attr('x2', W - M.r).attr('y1', -8).attr('y2', -8);
+    ax.selectAll('text.t').data(ticks.filter((d, i, a) => (i === 0 || x(d) - x(a[i - 1]) > 64) && x(now) - x(d) > 78 && x(d) > M.l + 24)).join('text').attr('class', 't').attr('x', (d) => x(d)).attr('y', 14).attr('text-anchor', 'middle').text((d) => fTick.format(d).replace(',', '') + (span < 4 ? 'h' : ''));
+    if (!ax.selectAll('text.t').size()) ax.append('text').attr('x', x(t0)).attr('y', 14).attr('text-anchor', 'start').text(new Intl.DateTimeFormat('pt-BR', { timeZone: tz, day: '2-digit', month: '2-digit', hour: '2-digit' }).format(t0).replace(',', '') + 'h');
+    ax.append('text').attr('x', x(now)).attr('y', 14).attr('text-anchor', 'end').text('agora');
+    svg.append('line').attr('class', 'ev-now').attr('x1', x(now)).attr('x2', x(now)).attr('y1', M.t).attr('y2', M.t + Hp);
+    const line = d3.line().x((d) => x(d[0])).y((d) => d[1]).curve(d3.curveStepAfter);
+    const groups = [];
+    S.forEach((l, i) => {
+      const c = PAL[i % PAL.length]; const o = off(i);
+      const P = l.segs.map((s) => [s.a || x.domain()[0], y(lvl(s.s)) + o]); const last = l.segs[l.segs.length - 1]; P.push([last.b, y(lvl(last.s)) + o]);
+      const g = svg.append('g').attr('data-i', i); groups.push(g);
+      g.append('path').attr('class', 'ev-line').attr('d', line(P)).attr('stroke', c);
       for (const pt of l.pts) {
-        const c = lg.append('circle').attr('class', 'ev-dot').attr('cx', x(pt.t)).attr('cy', 27).attr('r', pt.mudou || pt.inicio ? 6 : 4.5)
-          .attr('fill', pt.mudou || pt.inicio ? pt.cor : 'var(--color-panel)').attr('stroke', pt.mudou || pt.inicio ? 'var(--color-panel)' : 'var(--color-fg)').attr('stroke-width', pt.mudou || pt.inicio ? 2 : 1.5).attr('tabindex', 0);
+        const segAt = l.segs.filter((s) => (s.a || x.domain()[0]) <= pt.t).pop() || l.segs[0];
+        const cy = y(lvl(pt.mudou || pt.inicio ? (evoStage(pt.e && pt.e.para) || segAt.s) : segAt.s)) + o;
+        const circ = g.append('circle').attr('class', 'ev-pt ev-dot').attr('cx', x(pt.t)).attr('cy', cy).attr('r', pt.mudou || pt.inicio ? 5.5 : 4).attr('stroke', c).attr('tabindex', 0);
         const linhas = pt.e ? [dt(pt.e.data), `${pt.e.de && pt.e.de !== '—' ? pt.e.de : '—'} → ${pt.e.para && pt.e.para !== '—' ? pt.e.para : 'informação nova, sem mudança de status'}`, `Confirmação: ${pt.e.confiabilidade || '—'}`, `Fonte: ${pt.e.fonte || '—'}`] : [dt(pt.t.toISOString()), 'Primeira menção registrada', `Fonte: ${(Array.isArray(pt.n && pt.n.fontes) && pt.n.fontes[0] && pt.n.fontes[0].v) || '—'}`];
-        const titulo = pt.e ? pt.e.titulo : l.nome;
-        c.on('mousemove', (evt) => showTip(box, evt, titulo, linhas)).on('mouseleave', () => hideTip(box))
+        const titulo = `${l.nome}${pt.e ? ': ' + pt.e.titulo : ''}`;
+        circ.on('mousemove', (evt) => showTip(box, evt, titulo, linhas)).on('mouseleave', () => hideTip(box))
           .on('focus', (evt) => { const r = evt.target.getBoundingClientRect(); showTip(box, { clientX: r.right, clientY: r.bottom }, titulo, linhas); }).on('blur', () => hideTip(box))
           .on('click', (evt) => { evt.stopPropagation(); showTip(box, evt, titulo, linhas); });
-        if (pt.e && /^https:\/\//.test(pt.e.link || '')) c.on('dblclick', () => window.open(pt.e.link, '_blank', 'noopener'));
       }
     });
-    box.replaceChildren(svg.node());
+    let foco = -1;
+    const aplicar = () => { groups.forEach((g, i) => g.attr('opacity', foco < 0 || foco === i ? 1 : 0.15)); if (foco >= 0) groups[foco].raise(); leg.querySelectorAll('li').forEach((li, i) => li.setAttribute('aria-pressed', String(foco === i))); };
+    const leg = el('ul', 'lx-evo-leg', ...S.map((l, i) => {
+      const c = PAL[i % PAL.length];
+      const sw = d3.create('svg').attr('viewBox', '0 0 26 14'); sw.append('line').attr('x1', 0).attr('x2', 26).attr('y1', 7).attr('y2', 7).attr('stroke', c).attr('stroke-width', 2.5); sw.append('circle').attr('cx', 13).attr('cy', 7).attr('r', 4).attr('fill', 'var(--color-panel)').attr('stroke', c).attr('stroke-width', 2);
+      const ult = l.segs[l.segs.length - 1];
+      const li = el('li', '', sw.node(), el('span', 'lg-n', l.nome), el('span', 'lg-s', `${l.rotulo}${ult.a ? ' · desde ' + fDM.format(ult.a) : ''}`));
+      li.tabIndex = 0; li.setAttribute('role', 'button'); li.setAttribute('aria-pressed', 'false');
+      const tog = () => { foco = foco === i ? -1 : i; aplicar(); };
+      li.addEventListener('click', tog); li.addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); tog(); } });
+      li.addEventListener('mouseenter', () => { if (foco < 0) groups.forEach((g, j) => g.attr('opacity', j === i ? 1 : 0.15)); });
+      li.addEventListener('mouseleave', () => aplicar());
+      return li;
+    }));
+    box.replaceChildren(...[titP, svg.node(), leg].filter(Boolean));
   }
 
   function drawEvoCard(pos, nomes, ev, orgaos) {
@@ -1382,8 +1421,6 @@ dash.calc('painel', {
     sel.replaceChildren(...ativos.map((id) => { const k = nomes.filter((n) => n.orgao_id === id).length; return new Option(`${nomeOrg(id)} (${k ? k + ' nome' + (k === 1 ? '' : 's') : 'só o titular'})`, id); }));
     sel.value = st.evo;
     if (!sel.dataset.wired) { sel.dataset.wired = '1'; sel.addEventListener('change', () => { st.evo = sel.value; draw(); }); }
-    legend('evo-leg', [...EVO_ETAPAS.slice(1).map((e) => [lc(e), evoCor(e)]), ['Descartado ou recusou', evoCor('🔴 DESCARTADO')]]);
-    legend('evo-leg2', [['Titular: permanência', titCor('Permanece')], ['Saída mencionada', titCor('Saída mencionada')], ['Saída em negociação', titCor('Saída em negociação')], ['Saída confirmada', titCor('Saída confirmada')], ['Sem informação', titCor('Sem informação')]]);
     if (!st.evo) { box.replaceChildren(el('p', 'lx-empty', 'Nenhum órgão com nomes registrados ainda.')); return; }
     drawEvolucao(box, st.evo, pos, nomes, ev, orgaos);
   }
