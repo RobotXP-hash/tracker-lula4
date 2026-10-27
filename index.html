@@ -79,6 +79,9 @@ img { max-width: 100%; }
 .lx-filters { display: flex; flex-wrap: wrap; gap: var(--cds-gap-xs); align-items: center; }
 .lx-filters input, .lx-filters select, .lx-in { font: inherit; font-size: var(--cds-font-size-caption); padding: var(--cds-pad-xs) var(--cds-pad-sm); border: 1px solid var(--color-border-line); border-radius: var(--cds-radius); background: var(--color-bg); color: var(--color-fg); min-width: 0; }
 .lx-filters input[type="search"] { flex: 1 1 12rem; }
+.lx-active { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; font-size: var(--cds-font-size-caption); padding: 6px 10px; border: 1px dashed var(--color-border-line); border-radius: var(--cds-radius); }
+.lx-active b { font-weight: 600; }
+.lx-emptybox { display: flex; flex-direction: column; align-items: flex-start; gap: 8px; }
 .lx-chips { display: flex; flex-wrap: wrap; gap: var(--cds-gap-xs); }
 .lx-chip { font: inherit; font-size: var(--cds-font-size-caption); border: 1px solid var(--color-border-line); background: var(--color-bg); color: var(--color-fg); border-radius: 999px; padding: 2px var(--cds-pad-sm); cursor: pointer; }
 .lx-chip[aria-pressed="true"] { background: var(--color-fg); color: var(--color-bg); border-color: var(--color-fg); }
@@ -328,6 +331,7 @@ svg.dz-donut { width: 100%; height: auto; }
     <button class="lx-chip" id="f-limpar" type="button">Limpar filtros</button>
   </div>
   <div class="lx-chips" id="lx-quick" aria-label="Atalhos de filtro"></div>
+  <div class="lx-active" id="lx-active" hidden aria-live="polite"></div>
 
   <section id="painel" data-pane="painel" class="lx" hidden>
     <div class="dz" id="hub" data-source="painel indicadores t_consolidado t_evento t_partido g_partidos"></div>
@@ -490,7 +494,7 @@ svg.dz-donut { width: 100%; height: auto; }
 
   <section id="linha-do-tempo" data-pane="linha-do-tempo" class="lx" hidden>
     <div class="lx-card" id="evo-card" data-source="t_nome t_posicao t_evento">
-      <div class="lx-evo-head"><h2>Evolução dos nomes por órgão</h2><select class="lx-in" id="evo-sel" aria-label="Órgão"></select></div>
+      <div class="lx-evo-head"><h2>Evolução dos nomes por órgão</h2><label class="lx-row lx-muted lx-howto">Órgão do gráfico <select class="lx-in" id="evo-sel" aria-label="Órgão do gráfico"></select></label></div>
       <p class="lx-muted">Cada linha é uma pessoa. Quanto mais alta, mais perto do cargo: da simples menção até a nomeação no Diário Oficial. Quem é descartado ou recusa desce para "fora da disputa". Cada círculo é um registro com fonte; passe o mouse ou toque para ver. Clique num nome da legenda para destacar a linha.</p>
       <div class="lx-evo" id="evo-box"></div>
     </div>
@@ -835,6 +839,26 @@ dash.calc('painel', {
     s.value = values.some((v) => (Array.isArray(v) ? v[0] : v) === cur) ? cur : '';
   };
 
+
+  const filtrosAtivos = () => {
+    const out = []; const orgs = rows('t_orgao') || [];
+    if (st.quick) out.push((QUICK.find((q) => q[0] === st.quick) || [, st.quick])[1]);
+    if (st.f.q) out.push(`Busca: "${st.f.q}"`);
+    if (st.f.orgao) out.push('Órgão: ' + orgShort(orgs, st.f.orgao));
+    if (st.f.partido) out.push('Partido: ' + st.f.partido);
+    if (st.f.status) out.push('Status: ' + st.f.status);
+    if (st.f.area) out.push('Tema: ' + temaNome(st.f.area));
+    if (st.f.conf) out.push('Confirmação: ' + st.f.conf);
+    if (st.f.eixo) out.push('Tipo: ' + st.f.eixo);
+    if (st.f.desde) out.push('Desde ' + dd(st.f.desde));
+    return out;
+  };
+  const limparTudo = () => { for (const k of Object.keys(st.f)) st.f[k] = ''; st.quick = ''; draw(); };
+  const vazio = (msg) => {
+    const fa = filtrosAtivos(); if (!fa.length) return el('p', 'lx-empty', msg.replace(' com esses filtros', ' registrado ainda'));
+    const b = el('button', 'lx-chip', 'Limpar filtros e mostrar tudo'); b.type = 'button'; b.addEventListener('click', limparTudo);
+    return el('div', 'lx-emptybox', el('p', 'lx-empty', `${msg} Filtros ativos: ${fa.join(' · ')}.`), b);
+  };
   // ---------- filtros ----------
   const hay = (...parts) => parts.flat().map((x) => typeof x === 'object' && x ? JSON.stringify(x) : String(x ?? '')).join(' ').toLowerCase();
   const passDesde = (d) => !st.f.desde || dayKey(d) >= st.f.desde;
@@ -951,7 +975,7 @@ dash.calc('painel', {
         const b = el('button', 'lx-card lx-card-btn', el('div', 'lx-row', tag(o.tipo), tag(s, 'lx-strong')), el('h3', '', o.nome), el('span', 'lx-muted', tit ? `${tit.ocupante} · ${tit.situacao_ocupante}` : '—'), el('span', 'lx-muted', `${nn} nome(s) em circulação · atualizado ${dt(o.ultima_atualizacao)}`));
         b.type = 'button'; b.dataset.key = o.id; b.addEventListener('click', () => { st.org = o.id; draw(); window.scrollTo({ top: 0 }); }); return b;
       });
-      list.replaceChildren(...(cards.length ? cards : [el('p', 'lx-empty', 'Nenhum órgão com esses filtros.')]));
+      list.replaceChildren(...(cards.length ? cards : [vazio('Nenhum órgão com esses filtros.')]));
       return;
     }
     const o = orgaos.find((x) => x.id === st.org); if (!o) { st.org = ''; return drawOrgaos(orgaos, pos, nomes, pols, ev); }
@@ -1024,7 +1048,7 @@ dash.calc('painel', {
     const box = document.getElementById('re-list'); if (!re) return;
     const R = re.filter((r) => okCommon({ h: hay(r), orgao: (Array.isArray(r.orgaos_afetados) ? r.orgaos_afetados : []).includes(st.f.orgao) ? st.f.orgao : (Array.isArray(r.orgaos_afetados) ? r.orgaos_afetados : [])[0], partido: '', status: r.status, area: '', conf: r.confiabilidade, eixo: 'Reestruturação', data: r.ultima_atualizacao }) && !st.f.partido && !st.f.area);
     const kv = (pairs) => el('dl', 'lx-kv', ...pairs.flatMap(([k, v]) => [el('dt', '', k), el('dd', '', v instanceof Node ? v : (v || '—'))]));
-    box.replaceChildren(...(R.length ? R.map((r) => { const c = el('div', 'lx-card', el('div', 'lx-row', tag(r.status, 'lx-strong'), tag(r.confiabilidade)), el('h2', '', r.alteracao), kv([['Estrutura atual', r.estrutura_atual], ['Estrutura resultante', r.estrutura_resultante], ['Motivação declarada', r.motivacao_declarada], ['Motivação política (imprensa)', r.motivacao_politica], ['Competências afetadas', r.competencias], ['Órgãos afetados', (Array.isArray(r.orgaos_afetados) ? r.orgaos_afetados : []).map((id) => orgShort(orgaos, id)).join(', ')], ['Autoridades envolvidas', r.autoridades], ['Impacto institucional', r.impacto_institucional], ['Impacto sobre políticas', r.impacto_politicas], ['Próxima etapa', r.proxima_etapa], ['Primeira menção', dd(r.primeira_mencao)], ['Última atualização', dt(r.ultima_atualizacao)], ['Fontes', fontes(r.fontes)]])); c.dataset.key = r.id; return c; }) : [el('p', 'lx-empty', 'Nenhuma mudança administrativa com esses filtros.')]));
+    box.replaceChildren(...(R.length ? R.map((r) => { const c = el('div', 'lx-card', el('div', 'lx-row', tag(r.status, 'lx-strong'), tag(r.confiabilidade)), el('h2', '', r.alteracao), kv([['Estrutura atual', r.estrutura_atual], ['Estrutura resultante', r.estrutura_resultante], ['Motivação declarada', r.motivacao_declarada], ['Motivação política (imprensa)', r.motivacao_politica], ['Competências afetadas', r.competencias], ['Órgãos afetados', (Array.isArray(r.orgaos_afetados) ? r.orgaos_afetados : []).map((id) => orgShort(orgaos, id)).join(', ')], ['Autoridades envolvidas', r.autoridades], ['Impacto institucional', r.impacto_institucional], ['Impacto sobre políticas', r.impacto_politicas], ['Próxima etapa', r.proxima_etapa], ['Primeira menção', dd(r.primeira_mencao)], ['Última atualização', dt(r.ultima_atualizacao)], ['Fontes', fontes(r.fontes)]])); c.dataset.key = r.id; return c; }) : [vazio('Nenhuma mudança administrativa com esses filtros.')]));
   }
 
   function drawTimeline(ev, orgaos) {
@@ -1035,7 +1059,7 @@ dash.calc('painel', {
     R.sort((a, b) => (a.data < b.data ? 1 : -1));
     const out = []; let last = '';
     for (const e of R) { const k = dayKey(e.data); if (k !== last) { out.push(el('div', 'lx-day', fDay.format(new Date(e.data)))); last = k; } out.push(evItem(e, orgaos, false)); }
-    box.replaceChildren(...(out.length ? out : [el('p', 'lx-empty', 'Nenhum evento com esses filtros.')]));
+    box.replaceChildren(...(out.length ? out : [vazio('Nenhum evento com esses filtros.')]));
   }
 
   function drawPessoas(nomes, pos, tr, ev, pols, orgaos) {
@@ -1516,7 +1540,8 @@ dash.calc('painel', {
     quick.querySelectorAll('.lx-chip').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.q === st.quick)));
     document.querySelectorAll('[data-pane]').forEach((s) => { s.hidden = s.dataset.pane !== st.tab; });
     const showF = !['painel', 'inicio', 'pessoas', 'temas', 'como-ler'].includes(st.tab) && !(st.tab === 'orgaos' && st.org);
-    document.getElementById('lx-filterbar').hidden = !showF; quick.hidden = ['pessoas', 'painel', 'temas', 'como-ler'].includes(st.tab);
+    document.getElementById('lx-filterbar').hidden = !showF;
+    { const ab = document.getElementById('lx-active'); const fa = filtrosAtivos(); ab.hidden = !showF || !fa.length; if (!ab.hidden) { const b = el('button', 'lx-chip', 'Limpar filtros'); b.type = 'button'; b.addEventListener('click', limparTudo); ab.replaceChildren(el('b', '', 'Filtros ativos:'), fa.join(' · '), b); } } quick.hidden = ['pessoas', 'painel', 'temas', 'como-ler'].includes(st.tab);
     for (const [k, id] of Object.entries(fIds)) { const n = document.getElementById(id); if (n !== document.activeElement) n.value = k === 'q' ? (n.value && n.value.trim().toLowerCase() === st.f.q ? n.value : st.f.q) : st.f[k]; }
 
     const orgaos = rows('t_orgao') || []; const pos = rows('t_posicao'); const nomes = rows('t_nome'); const ev = rows('t_evento'); const pols = rows('t_politica'); const checks = rows('t_checagem'); const parts = rows('t_partido');
