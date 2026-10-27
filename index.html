@@ -125,10 +125,10 @@ img { max-width: 100%; }
 .lx-sw.lx-dash { background: transparent !important; border: 2px dashed var(--color-fg-muted); width: 8px; height: 8px; }
 .lx-map-group { display: flex; flex-direction: column; gap: var(--cds-gap-xs); }
 .lx-map { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 8.25rem), 1fr)); gap: 6px; }
-.lx-tilebtn { font: inherit; text-align: left; color: var(--color-fg); border: 1px solid var(--lx-c); background: color-mix(in srgb, var(--lx-c) 24%, var(--color-panel)); border-radius: var(--cds-radius); padding: 6px 8px; cursor: pointer; display: flex; flex-direction: column; gap: 2px; min-height: 4.4rem; min-width: 0; }
-.lx-tilebtn:hover { background: color-mix(in srgb, var(--lx-c) 40%, var(--color-panel)); }
+.lx-tilebtn { font: inherit; text-align: left; color: var(--color-fg); border: 1px solid color-mix(in srgb, var(--lx-c) 55%, var(--color-border-line)); border-left: 5px solid var(--lx-c); background: color-mix(in srgb, var(--lx-c) 16%, var(--color-panel)); border-radius: var(--cds-radius); padding: 6px 8px; cursor: pointer; display: flex; flex-direction: column; gap: 2px; min-height: 4.4rem; min-width: 0; }
+.lx-tilebtn:hover { background: color-mix(in srgb, var(--lx-c) 30%, var(--color-panel)); }
 .lx-tilebtn:focus-visible { outline: 2px solid var(--color-fg); outline-offset: 2px; }
-.lx-tilebtn.lx-saida { border: 2px dashed var(--color-fg-muted); }
+.lx-tilebtn.lx-saida { border-style: dashed; border-width: 2px 2px 2px 5px; border-left-style: solid; border-top-color: var(--color-fg-muted); border-right-color: var(--color-fg-muted); border-bottom-color: var(--color-fg-muted); }
 .lx-tilebtn .lx-sig { font-weight: var(--cds-font-weight-medium); }
 .lx-tilebtn .lx-occ, .lx-tilebtn .lx-stg { font-size: 11px; color: var(--color-fg-muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .lx-grid2 { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 24rem), 1fr)); gap: var(--cds-gap-md); }
@@ -166,8 +166,8 @@ img { max-width: 100%; }
 .lx-hubcard:hover .lx-hub-go { color: var(--color-fg); }
 .lx-hubcard.lx-hub-main { grid-column: 1 / -1; min-height: 0; }
 .lx-tabs { position: sticky; top: env(safe-area-inset-top, 0px); z-index: 4; background: var(--color-bg); padding-top: 4px; }
+#topo { --dz-c1: #3b82f6; --dz-c2: #f2c94c; --dz-c3: #f2994a; --dz-c4: #a78bfa; --dz-c5: #27ae60; --dz-c6: #2fd07a; --dz-c7: #eb5757; --dz-c8: #8a94a6; --dz-c9: #56b4e9; }
 .dz { --dz-track: color-mix(in srgb, var(--color-fg) 12%, transparent); --dz-row: color-mix(in srgb, var(--color-fg) 4%, transparent);
-  --dz-c1: #3b82f6; --dz-c2: #f2c94c; --dz-c3: #f2994a; --dz-c4: #9b8cf2; --dz-c5: #27ae60; --dz-c6: #2fd07a; --dz-c7: #eb5757; --dz-c8: #8a94a6; --dz-c9: #56b4e9;
   display: grid; gap: 12px; grid-template-columns: minmax(0, 1fr) minmax(0, 2fr) minmax(0, 1.5fr);
   grid-template-areas: "nov feed donut" "gauge feed donut" "part part rank" "pol pol minis" "day day day"; }
 .dz-tile { background: var(--color-panel); border: 1px solid var(--color-border-line); border-radius: 12px; padding: 16px 18px; min-width: 0; display: flex; flex-direction: column; gap: 10px; cursor: pointer; transition: border-color .15s; }
@@ -1022,7 +1022,7 @@ dash.calc('painel', {
     const box = document.getElementById('mapa-box'); const d = dash.data('g_esplanada');
     if (d.status === 'error') return failBox(box); if (d.status !== 'ok') return;
     const ETAPAS = ['⚪ SEM MOVIMENTAÇÃO', '🔵 NOME MENCIONADO', '🟡 NOME EM CONSIDERAÇÃO', '🟠 NEGOCIAÇÃO EM CURSO', '🟣 CONVITE REPORTADO', '🟢 ESCOLHA CONFIRMADA', '✅ NOMEADO/OFICIALIZADO'];
-    const cols = ['var(--cds-chart-muted)', ...ramp(6)];
+    const cols = ['var(--cds-chart-muted)', 'var(--dz-c1)', 'var(--dz-c2)', 'var(--dz-c3)', 'var(--dz-c4)', 'var(--dz-c5)', 'var(--dz-c6)'];
     const cor = (e) => e === '⬛ SAÍDA CONFIRMADA' ? 'var(--cds-chart-status-critical)' : cols[Math.max(0, ETAPAS.indexOf(e))];
     const presentes = new Set(d.data.map((r) => r.etapa));
     legend('mapa-leg', [...ETAPAS.filter((e) => presentes.has(e) || e === '⚪ SEM MOVIMENTAÇÃO').map((e) => [e.replace(/^\S+\s/, '').toLowerCase().replace(/^./, (c) => c.toUpperCase()), cor(e)]), ...(presentes.has('⬛ SAÍDA CONFIRMADA') ? [['Saída confirmada', cor('⬛ SAÍDA CONFIRMADA')]] : []), ['Titular com saída sinalizada', '', true]]);
@@ -1046,7 +1046,7 @@ dash.calc('painel', {
   function drawFunil() {
     const box = document.getElementById('funil-box'); const d = dash.data('g_funil');
     if (d.status === 'error') return failBox(box); if (d.status !== 'ok') return;
-    const cols = ramp(6);
+    const cols = ['var(--dz-c1)', 'var(--dz-c2)', 'var(--dz-c3)', 'var(--dz-c4)', 'var(--dz-c5)', 'var(--dz-c6)'];
     const color = (r) => r.ordem < 6 ? cols[r.ordem] : r.status.startsWith('⬛') ? 'var(--cds-chart-status-critical)' : 'var(--cds-chart-muted)';
     hbars(box, d.data, { label: (r) => r.status.replace(/^\S+\s/, '').toLowerCase().replace(/^./, (c) => c.toUpperCase()), series: [{ key: 'n', color }], tip: (r) => [r.status, [`${r.n} nome(s)`]] });
   }
