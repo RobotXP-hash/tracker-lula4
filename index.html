@@ -216,6 +216,7 @@ svg.dz-donut { width: 100%; height: auto; }
 .dz-person { font: inherit; color: inherit; background: none; border: 0; cursor: pointer; display: flex; flex-direction: column; align-items: center; gap: 4px; text-align: center; min-width: 0; }
 .dz-av { position: relative; width: 64px; height: 64px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.3rem; font-weight: 700; background: color-mix(in srgb, var(--dz-c1) 35%, var(--color-panel)); border: 3px solid var(--color-fg-muted); }
 .dz-first .dz-av { border-color: var(--dz-c2); width: 74px; height: 74px; }
+.dz-avimg { width: 100%; height: 100%; border-radius: 50%; object-fit: cover; }
 .dz-rank { position: absolute; bottom: -6px; left: 50%; transform: translateX(-50%); width: 20px; height: 20px; border-radius: 50%; font-size: 11px; display: flex; align-items: center; justify-content: center; background: var(--color-fg); color: var(--color-bg); }
 .dz-first .dz-rank { background: var(--dz-c2); color: #1b1300; }
 .dz-pn { font-size: 12.5px; font-weight: 600; margin-top: 6px; }
@@ -235,6 +236,7 @@ svg.dz-donut { width: 100%; height: auto; }
 .dz-lead { font-size: 1.05rem; font-weight: 700; margin: 0; }
 @media (max-width: 1000px) { .dz { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); grid-template-areas: "nov gauge" "feed feed" "donut donut" "part part" "rank rank" "pol pol" "minis minis" "day day"; } }
 @media (max-width: 560px) { .dz { grid-template-columns: minmax(0, 1fr); grid-template-areas: "nov" "gauge" "feed" "donut" "part" "rank" "pol" "minis" "day"; } .dz-hide { display: none; } .dz-pill-trunc { max-width: 6.5rem; } .dz-kpis { grid-template-columns: 1fr 1fr; } .dz-donutwrap { grid-template-columns: 110px 1fr; } }
+.lx-stale { margin: 8px 0 0; padding: 8px 12px; border-radius: 8px; border: 1px solid var(--color-warn); color: var(--color-warn); font-size: var(--cds-font-size-caption); }
 [data-dash-source-state=refreshing] { opacity: .5; transition: opacity var(--cds-dur-slow); }
 @media (max-width: 640px) { .lx-hide-n { display: none; } .lx-item { grid-template-columns: 1fr; } .lx-kv { grid-template-columns: 1fr; } }
 
@@ -253,6 +255,7 @@ svg.dz-donut { width: 100%; height: auto; }
 <div class="lx" id="topo">
   <header>
     <h1>Formação e prioridades do governo Lula 4</h1>
+    <p class="lx-stale" id="lx-stale" hidden></p>
     <div class="lx-meta lx-muted" id="lx-meta" data-source="t_checagem">
       <span>Última checagem automática: <b id="lx-ult" class="dash-skeleton">—</b></span>
       <span>Próxima checagem: <b id="lx-prox" class="dash-skeleton">—</b></span>
@@ -455,6 +458,7 @@ svg.dz-donut { width: 100%; height: auto; }
 </div></footer>
 
 <script>
+window.__SITE__ = true;
 window.dash = (() => {
   const calcs = []; const results = {}; const subs = []; let base = null; let status = 'loading';
   const api = {
@@ -541,7 +545,7 @@ dash.calc('g_esplanada', {
       const ns = t_nome.filter((n) => n.posicao_id === p.id);
       const etapa = p.situacao_ocupante === 'Saída confirmada' ? '⬛ SAÍDA CONFIRMADA' : (ORDEM.find((s) => ns.some((n) => n.status === s)) || '⚪ SEM MOVIMENTAÇÃO');
       const lider = ns.find((n) => n.status === etapa);
-      const grupo = o.tipo === 'Presidência' ? 'Núcleo do Planalto' : /Ministério|status de ministério/.test(o.tipo) ? 'Ministérios' : 'Bancos, estatais e autarquias';
+      const grupo = o.tipo === 'Presidência' ? 'Núcleo do Planalto' : /Ministério|status de ministério/.test(o.tipo) ? 'Ministérios' : o.tipo === 'Agência reguladora' ? 'Agências reguladoras' : /Banco|Empresa/.test(o.tipo) ? 'Bancos e empresas estatais' : 'Autarquias, fundações e outros órgãos';
       return { orgao_id: o.id, sigla: o.sigla, orgao: o.nome, grupo, ocupante: p.ocupante || '—', situacao: p.situacao_ocupante || '—', etapa, saida: ['Saída mencionada', 'Saída em negociação', 'Saída confirmada'].includes(p.situacao_ocupante), nomes: ns.length, lider: lider ? lider.nome : '' };
     });
   },
@@ -636,6 +640,7 @@ dash.calc('painel', {
   const link = (texto, href) => (typeof href === 'string' && href.startsWith('https://')) ? Object.assign(el('a', '', texto || 'link'), { href, target: '_blank', rel: 'noopener' }) : el('span', '', texto || '');
   const fontes = (arr) => el('span', 'lx-src', ...(Array.isArray(arr) ? arr : []).map((f) => link(`${f.v}${f.d ? ' (' + dd(f.d) + ')' : ''}`, f.u)));
   const td = (cls, ...k) => el('td', cls, ...k);
+  const fotoSrc = (p) => { if (!p) return ''; const f = window.__SITE__ ? p.foto_site : p.foto; return (typeof f === 'string' && (f.startsWith('/_blob/') || f.startsWith('fotos/') || f.startsWith('data:image/'))) ? f : ''; };
   const plink = (nome) => { const b = el('button', 'lx-plink', nome); b.type = 'button'; b.dataset.pessoa = nome; return b; };
   const sub = (t) => t ? el('span', 'lx-sub', t) : null;
   const rows = (id) => { const d = dash.data(id); return d.status === 'ok' ? d.data : null; };
@@ -785,7 +790,7 @@ dash.calc('painel', {
   function drawOrgaos(orgaos, pos, nomes, pols, ev) {
     const sel = document.getElementById('org-sel'); const list = document.getElementById('org-list'); const det = document.getElementById('org-detail'); const back = document.getElementById('org-voltar');
     if (!orgaos || !pos || !nomes) { if (failed('base')) list.replaceChildren(el('div', 'lx-fail', 'Failed to load')); return; }
-    const ordem = ['Presidência', 'Ministério', 'Ministério a criar', 'Órgão com status de ministério', 'Autarquia', 'Banco público', 'Empresa estatal', 'Pasta a definir', 'Indicação presidencial', 'Estrutura temporária'];
+    const ordem = ['Presidência', 'Ministério', 'Ministério a criar', 'Órgão com status de ministério', 'Agência reguladora', 'Autarquia', 'Fundação', 'Órgão federal', 'Serviço social autônomo', 'Banco público', 'Empresa estatal', 'Pasta a definir', 'Indicação presidencial', 'Estrutura temporária'];
     const O = orgaos.slice().sort((a, b) => ordem.indexOf(a.tipo) - ordem.indexOf(b.tipo) || a.nome.localeCompare(b.nome, 'pt'));
     sel.replaceChildren(new Option('Todos os órgãos', ''), ...O.map((o) => new Option(o.nome, o.id))); sel.value = st.org;
     back.hidden = !st.org; list.hidden = !!st.org; det.hidden = !st.org;
@@ -900,8 +905,8 @@ dash.calc('painel', {
     if (!exact && !N.length && !P.length && !T.length && !E.length) { out.replaceChildren(el('p', 'lx-empty', 'Ninguém com esse nome na base.')); return; }
     const nomeTxt = exact ? exact.nome : (N[0] || {}).nome || (P[0] || {}).ocupante || st.pessoa;
     const inic = nomeTxt.split(/\s+/).filter(Boolean).map((w) => w[0]).filter((c) => /\p{Lu}/u.test(c)).slice(0, 2).join('');
-    const temFoto = exact && typeof exact.foto === 'string' && (exact.foto.startsWith('/_blob/') || exact.foto.startsWith('data:image/'));
-    const avatar = temFoto ? Object.assign(el('img', 'lx-avatar'), { src: exact.foto, alt: 'Foto de ' + nomeTxt }) : el('div', 'lx-avatar', inic);
+    const temFoto = !!fotoSrc(exact);
+    const avatar = temFoto ? Object.assign(el('img', 'lx-avatar'), { src: fotoSrc(exact), alt: 'Foto de ' + nomeTxt }) : el('div', 'lx-avatar', inic);
     if (!temFoto) avatar.setAttribute('aria-hidden', 'true');
     const kv = (pairs) => el('dl', 'lx-kv', ...pairs.flatMap(([k, v]) => [el('dt', '', k), el('dd', '', v instanceof Node ? v : (v || '—'))]));
     const rels = exact && Array.isArray(exact.relacionamentos) && exact.relacionamentos.length ? el('ul', '', ...exact.relacionamentos.map((r) => el('li', '', r))) : 'Nenhum relacionamento documentado na base.';
@@ -1026,7 +1031,7 @@ dash.calc('painel', {
     const cor = (e) => e === '⬛ SAÍDA CONFIRMADA' ? 'var(--cds-chart-status-critical)' : cols[Math.max(0, ETAPAS.indexOf(e))];
     const presentes = new Set(d.data.map((r) => r.etapa));
     legend('mapa-leg', [...ETAPAS.filter((e) => presentes.has(e) || e === '⚪ SEM MOVIMENTAÇÃO').map((e) => [e.replace(/^\S+\s/, '').toLowerCase().replace(/^./, (c) => c.toUpperCase()), cor(e)]), ...(presentes.has('⬛ SAÍDA CONFIRMADA') ? [['Saída confirmada', cor('⬛ SAÍDA CONFIRMADA')]] : []), ['Titular com saída sinalizada', '', true]]);
-    const grupos = ['Núcleo do Planalto', 'Ministérios', 'Bancos, estatais e autarquias'];
+    const grupos = ['Núcleo do Planalto', 'Ministérios', 'Agências reguladoras', 'Autarquias, fundações e outros órgãos', 'Bancos e empresas estatais'];
     box.replaceChildren(...grupos.map((gname) => {
       const it = d.data.filter((r) => r.grupo === gname); if (!it.length) return null;
       const grid = el('div', 'lx-map', ...it.map((r) => {
@@ -1122,7 +1127,7 @@ dash.calc('painel', {
     const partidos = tile('part', 'politica-partidaria', 'Composição política', 'Titulares filiados e nomes em circulação por partido', el('div', 'dz-scroll', ptb));
     // 6. mais citados
     const rank = (p.ranking || []).slice(0, 3);
-    const people = el('div', 'dz-people', ...rank.map((r, i) => { const ini = r.nome.split(/\s+/).filter((w) => /^\p{Lu}/u.test(w)).map((w) => w[0]).slice(0, 2).join(''); const b = el('button', 'dz-person' + (i === 0 ? ' dz-first' : ''), el('span', 'dz-av', ini, el('span', 'dz-rank', String(i + 1))), el('span', 'dz-pn', r.nome), el('span', 'dz-pc', r.cargo || ''), el('b', 'dz-pv', String(r.n))); b.type = 'button'; b.dataset.pessoa = r.nome; return b; }));
+    const people = el('div', 'dz-people', ...rank.map((r, i) => { const ini = r.nome.split(/\s+/).filter((w) => /^\p{Lu}/u.test(w)).map((w) => w[0]).slice(0, 2).join(''); const pf = (rows('t_pessoa') || []).find((x) => x.nome === r.nome); const src = fotoSrc(pf); const av = el('span', 'dz-av', src ? Object.assign(el('img', 'dz-avimg'), { src, alt: '' }) : ini, el('span', 'dz-rank', String(i + 1))); const b = el('button', 'dz-person' + (i === 0 ? ' dz-first' : ''), av, el('span', 'dz-pn', r.nome), el('span', 'dz-pc', r.cargo || ''), el('b', 'dz-pv', String(r.n))); b.type = 'button'; b.dataset.pessoa = r.nome; return b; }));
     const citados = tile('rank', 'pessoas', 'Nomes mais citados', 'Movimentações registradas por pessoa', people);
     // 7. políticas
     const PST = [['⚪ ANUNCIADO', 'Anunciado', 'var(--dz-c9)'], ['🟡 EM FORMULAÇÃO', 'Em formulação', 'var(--dz-c2)'], ['🟠 EM NEGOCIAÇÃO', 'Em negociação', 'var(--dz-c3)'], ['🔵 EM IMPLEMENTAÇÃO', 'Em implementação', 'var(--dz-c1)'], ['🟢 IMPLEMENTADO', 'Implementado', 'var(--color-ok)'], ['⏸ SEM AVANÇO', 'Sem avanço', 'var(--dz-c8)'], ['🔴 ABANDONADO/REVISTO', 'Abandonado/revisto', 'var(--dz-c7)']];
@@ -1153,6 +1158,8 @@ dash.calc('painel', {
       const last = checks.slice().sort((a, b) => (a.at < b.at ? 1 : -1))[0];
       const u = document.getElementById('lx-ult'); u.classList.remove('dash-skeleton'); u.textContent = `${dt(last.at)}${last.nota ? ' · ' + last.nota : ''}`;
       const p = document.getElementById('lx-prox'); p.classList.remove('dash-skeleton'); p.textContent = dt(nextCheck(checks).toISOString());
+      const horas = (Date.now() - new Date(last.at).getTime()) / 3600000; const stl = document.getElementById('lx-stale');
+      stl.hidden = !(horas > 4.5); if (horas > 4.5) stl.textContent = `Atenção: a última checagem automática foi há ${Math.floor(horas)} horas. Os dados podem estar desatualizados.`;
     } else if (failed('base')) { ['lx-ult', 'lx-prox'].forEach((id) => { const n = document.getElementById(id); n.classList.remove('dash-skeleton'); n.textContent = '—'; }); }
 
     if (orgaos.length) fillSel('f-orgao', 'Todos os órgãos', orgaos.slice().sort((a, b) => a.nome.localeCompare(b.nome, 'pt')).map((o) => [o.id, o.nome]));
