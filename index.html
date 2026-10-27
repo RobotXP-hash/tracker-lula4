@@ -157,6 +157,18 @@ img { max-width: 100%; }
 .lx-defs dd { margin: 0; color: var(--color-fg-muted); }
 @media (max-width: 560px) { .lx-defs { grid-template-columns: 1fr; } .lx-defs dd { margin-bottom: 6px; } }
 .lx-howto { font-size: var(--cds-font-size-caption); }
+
+.lx-evo { position: relative; min-width: 0; }
+.lx-evo svg { display: block; width: 100%; overflow: visible; }
+.lx-evo .ev-name { font-size: 13px; font-weight: 600; fill: var(--color-fg); }
+.lx-evo .ev-st { font-size: 12px; fill: var(--color-fg-muted); }
+.lx-evo .ev-axis text { font-size: 11px; fill: var(--color-fg-muted); }
+.lx-evo .ev-axis line, .lx-evo .ev-grid { stroke: var(--color-border-line); }
+.lx-evo .ev-now { stroke: var(--color-fg-muted); stroke-dasharray: 3 3; }
+.lx-evo .ev-dot { cursor: pointer; }
+.lx-evo .ev-dot:focus-visible { outline: 2px solid var(--color-fg); }
+.lx-evo-head { display: flex; flex-wrap: wrap; gap: var(--cds-gap-sm); align-items: center; justify-content: space-between; }
+.lx-evo-legs { display: flex; flex-direction: column; gap: 4px; }
 .lx-grid2 { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 24rem), 1fr)); gap: var(--cds-gap-md); }
 .lx-read { display: flex; flex-direction: column; gap: var(--cds-gap-sm); }
 .lx-read details { border-bottom: 1px solid var(--color-border-line); padding-bottom: var(--cds-pad-sm); }
@@ -464,6 +476,12 @@ svg.dz-donut { width: 100%; height: auto; }
   </section>
 
   <section id="linha-do-tempo" data-pane="linha-do-tempo" class="lx" hidden>
+    <div class="lx-card" id="evo-card" data-source="t_nome t_posicao t_evento">
+      <div class="lx-evo-head"><h2>Evolução dos nomes por órgão</h2><select class="lx-in" id="evo-sel" aria-label="Órgão"></select></div>
+      <p class="lx-muted">Cada faixa é uma pessoa. A cor mostra o status em cada momento, da primeira menção até hoje; os pontos marcam cada registro (cheio quando o status muda, vazado quando chega informação nova sem mudança). A primeira faixa é a do titular atual. Passe o mouse ou toque nos pontos para ver a fonte.</p>
+      <div class="lx-evo-legs"><div class="lx-legend" id="evo-leg"></div><div class="lx-legend" id="evo-leg2"></div></div>
+      <div class="lx-evo" id="evo-box"></div>
+    </div>
     <div class="lx-card">
       <h2>Ritmo da montagem</h2>
       <div class="lx-legend" id="ritmo2-leg"></div>
@@ -947,14 +965,17 @@ dash.calc('painel', {
       el('h3', '', 'Pendências'), el('p', '', rel.pendencias || (tit && tit.proximo_movimento) || '—'),
       (Array.isArray(o.relatorio_historico) && o.relatorio_historico.length) ? el('div', '', el('h3', '', 'Histórico do relatório'), el('ul', '', ...o.relatorio_historico.map((h) => el('li', '', `${dd(h.data)}: ${h.texto}`)))) : null,
       el('p', 'lx-muted', `Última atualização: ${dt(o.ultima_atualizacao)}`));
+    const evoBox = el('div', 'lx-evo');
     det.replaceChildren(
       el('div', '', el('div', 'lx-row', tag(o.tipo), tag(o.area)), el('h2', '', o.nome)),
       card('Titular atual', tit ? kv([['Nome', el('span', 'lx-b', tit.ocupante)], ['Partido', tit.partido_ocupante], ['Situação', tit.situacao_ocupante], ['Status da posição', tag(posStatus(tit, nomes), 'lx-strong')], ['Referência', tit.ocupante_ref], ['Próximo movimento', tit.proximo_movimento], ['Observação', tit.nota]]) : el('p', 'lx-empty', 'Sem posição titular cadastrada.')),
       card('Nomes para o órgão', N.length ? nomeTable() : el('p', 'lx-empty', 'Nenhum nome em circulação.')),
+      card('Evolução dos nomes', el('p', 'lx-muted lx-howto', 'Status de cada pessoa ao longo do tempo, da primeira menção até hoje. Passe o mouse ou toque nos pontos para ver a fonte.'), evoBox),
       card('Principais cargos abaixo do titular', outros.length ? el('ul', '', ...outros.map((p) => el('li', '', `${p.cargo}: ${p.ocupante} (${p.situacao_ocupante})`))) : el('p', 'lx-empty', 'Ainda não mapeados. Secretarias-executivas, secretarias nacionais e entidades vinculadas entram aqui conforme surgirem movimentações.')),
       card('Prioridades e políticas públicas', polBlock),
       card('Alterações identificadas', E.length ? el('div', 'lx-feed', ...E.map((e) => evItem(e, orgaos, true))) : el('p', 'lx-empty', 'Nada registrado.')),
       relCard);
+    if (ev && pos && nomes) drawEvolucao(evoBox, o.id, pos, nomes, ev, orgaos);
   }
   document.getElementById('org-sel').addEventListener('change', (e) => { st.org = e.target.value; draw(); });
   document.getElementById('org-voltar').addEventListener('click', () => { st.org = ''; draw(); });
@@ -1264,6 +1285,109 @@ dash.calc('painel', {
   }
 
 
+
+  // ---------- evolução dos nomes ----------
+  const EVO_ETAPAS = ['⚪ SEM MOVIMENTAÇÃO', '🔵 NOME MENCIONADO', '🟡 NOME EM CONSIDERAÇÃO', '🟠 NEGOCIAÇÃO EM CURSO', '🟣 CONVITE REPORTADO', '🟢 ESCOLHA CONFIRMADA', '✅ NOMEADO/OFICIALIZADO'];
+  const EVO_COLS = ['var(--cds-chart-muted)', 'var(--dz-c1)', 'var(--dz-c2)', 'var(--dz-c3)', 'var(--dz-c4)', 'var(--dz-c5)', 'var(--dz-c6)'];
+  const evoStage = (s) => NOME_ST.find((x) => String(s || '').startsWith(x)) || '';
+  const evoCor = (s) => { if (/DESCARTADO|RECUSOU/.test(s)) return 'var(--dz-c8)'; if (/SAÍDA CONFIRMADA/.test(s)) return 'var(--cds-chart-status-critical)'; const i = EVO_ETAPAS.indexOf(s); return i >= 0 ? EVO_COLS[i] : 'var(--cds-chart-muted)'; };
+  const TIT_SIT = ['Sem informação', 'Permanece', 'Permanência confirmada', 'Permanência indicada (imprensa)', 'Saída mencionada', 'Saída em negociação', 'Saída confirmada', 'Vago', 'Pasta a criar'];
+  const titCor = (s) => /^Perman/.test(s) ? 'var(--color-ok)' : s === 'Saída mencionada' ? 'var(--dz-c3)' : s === 'Saída em negociação' ? 'var(--dz-c7)' : s === 'Saída confirmada' ? 'var(--cds-chart-status-critical)' : s === 'Vago' || s === 'Pasta a criar' ? 'var(--dz-c8)' : 'var(--cds-chart-muted)';
+  const lc = (s) => String(s || '').replace(/^\S+\s/, '').toLowerCase().replace(/^./, (c) => c.toUpperCase());
+  const tsOf = (s) => { const d = new Date(String(s).length === 10 ? s + 'T12:00:00-03:00' : s); return isNaN(d) ? null : d; };
+
+  function evoLanes(orgId, pos, nomes, ev) {
+    const now = new Date(); const lanes = [];
+    const evOf = (id) => ev.filter((e) => e.ref_id === id && tsOf(e.data)).sort((a, b) => (a.data < b.data ? -1 : 1));
+    const tit = pos.find((p) => p.orgao_id === orgId && p.nivel === 'titular' && p.ocupante && !/^(—|A verificar)$/.test(p.ocupante));
+    if (tit) {
+      const E = evOf(tit.id).filter((e) => e.eixo === 'Cargos'); const ch = E.filter((e) => TIT_SIT.includes(e.para));
+      let cur = ch.length && TIT_SIT.includes(ch[0].de) ? ch[0].de : (ch.length ? 'Sem informação' : tit.situacao_ocupante);
+      let start = null; const segs = [];
+      for (const e of ch) { const t = tsOf(e.data); if (start) segs.push({ a: start, b: t, s: cur }); else segs.push({ a: null, b: t, s: cur }); cur = e.para; start = t; }
+      segs.push({ a: start, b: now, s: cur });
+      lanes.push({ titular: true, nome: tit.ocupante, rotulo: `Titular · ${tit.situacao_ocupante}`, segs, pts: E.map((e) => ({ t: tsOf(e.data), e, mudou: TIT_SIT.includes(e.para), cor: titCor(TIT_SIT.includes(e.para) ? e.para : cur) })), cor: titCor });
+    }
+    const N = nomes.filter((n) => n.orgao_id === orgId).sort((a, b) => (a.primeira_mencao < b.primeira_mencao ? -1 : 1));
+    for (const n of N) {
+      const E = evOf(n.id); const ch = E.filter((e) => evoStage(e.para));
+      const t0 = tsOf(n.primeira_mencao) || (E[0] && tsOf(E[0].data)) || now;
+      let cur = ch.length ? (evoStage(ch[0].de) || evoStage(ch[0].para)) : evoStage(n.status) || n.status;
+      let start = t0; const segs = []; let fim = null;
+      for (const e of ch) {
+        const t = tsOf(e.data); const nx = evoStage(e.para);
+        if (t > start && nx !== cur) { segs.push({ a: start, b: t, s: cur }); start = t; }
+        cur = nx; if (/DESCARTADO|RECUSOU/.test(nx)) fim = t;
+      }
+      segs.push({ a: start, b: fim || now, s: cur });
+      let prev = segs[0].s; const pts = E.map((e) => { const s2 = evoStage(e.para); const mudou = !!s2 && s2 !== prev; if (s2) prev = s2; return { t: tsOf(e.data), e, mudou, cor: evoCor(s2 || prev) }; });
+      const ini = { t: t0, inicio: true, cor: evoCor(segs[0].s), n }; const same = pts.findIndex((q) => Math.abs(q.t - t0) < 60000); if (same >= 0) { ini.e = pts[same].e; pts.splice(same, 1); }
+      lanes.push({ nome: n.nome, rotulo: lc(n.status) + (n.partido && n.partido !== '—' ? ` · ${n.partido}` : ''), segs, fim, pts: [ini, ...pts] });
+    }
+    return lanes;
+  }
+
+  function drawEvolucao(box, orgId, pos, nomes, ev, orgaos) {
+    if (!box) return;
+    const lanes = evoLanes(orgId, pos, nomes, ev);
+    if (!lanes.some((l) => !l.titular) && !(lanes[0] && lanes[0].pts.length)) { box.replaceChildren(el('p', 'lx-empty', 'Ainda não há nomes nem movimentações registradas para este órgão.')); return; }
+    const W = Math.max(300, box.clientWidth || 640); const M = { l: 6, r: 14, t: 6, b: 26 }; const LH = 44;
+    const H = M.t + lanes.length * LH + M.b;
+    const allT = lanes.flatMap((l) => [...l.segs.map((s) => s.a).filter(Boolean), ...l.pts.map((p) => p.t)]);
+    const now = new Date(); let t0 = d3.min(allT) || new Date(now - 86400000);
+    if (now - t0 < 6 * 3600000) t0 = new Date(now - 6 * 3600000);
+    const pad = (now - t0) * 0.03; const x = d3.scaleTime().domain([new Date(+t0 - pad), now]).range([M.l, W - M.r]);
+    const span = (now - t0) / 86400000;
+    const fTick = new Intl.DateTimeFormat('pt-BR', span < 4 ? { timeZone: tz, day: '2-digit', month: '2-digit', hour: '2-digit' } : { timeZone: tz, day: '2-digit', month: '2-digit' });
+    const ticks = span < 4 ? x.ticks(d3.timeHour.every(span < 1.5 ? 6 : 12)) : x.ticks(Math.max(2, Math.floor(W / 90)));
+    const svg = d3.create('svg').attr('viewBox', `0 0 ${W} ${H}`).attr('height', H).attr('role', 'img')
+      .attr('aria-label', `Evolução de ${lanes.length} faixa(s) para ${orgName(orgaos, orgId)}: ` + lanes.map((l) => `${l.nome}, ${l.rotulo}`).join('; '));
+    const g = svg.append('g');
+    g.selectAll('line.ev-grid').data(ticks).join('line').attr('class', 'ev-grid').attr('x1', (d) => x(d)).attr('x2', (d) => x(d)).attr('y1', M.t).attr('y2', H - M.b);
+    const ax = svg.append('g').attr('class', 'ev-axis').attr('transform', `translate(0,${H - M.b + 4})`);
+    ax.selectAll('text').data(ticks.filter((d, i, a) => (i === 0 || x(d) - x(a[i - 1]) > 70) && x(now) - x(d) > 56)).join('text').attr('x', (d) => x(d)).attr('y', 12).attr('text-anchor', 'middle').text((d) => fTick.format(d).replace(',', '') + (span < 4 ? 'h' : ''));
+    g.append('line').attr('class', 'ev-now').attr('x1', x(now)).attr('x2', x(now)).attr('y1', M.t).attr('y2', H - M.b);
+    ax.append('text').attr('x', x(now)).attr('y', 12).attr('text-anchor', 'end').text('agora');
+    lanes.forEach((l, i) => {
+      const y = M.t + i * LH; const lg = g.append('g').attr('transform', `translate(0,${y})`);
+      const tx = lg.append('text').attr('x', M.l).attr('y', 13);
+      tx.append('tspan').attr('class', 'ev-name').text(l.nome);
+      tx.append('tspan').attr('class', 'ev-st').attr('dx', 8).text(l.rotulo);
+      const cor = l.titular ? titCor : evoCor;
+      lg.selectAll('rect').data(l.segs).join('rect').attr('x', (s) => x(s.a || x.domain()[0])).attr('width', (s) => Math.max(3, x(s.b) - x(s.a || x.domain()[0]))).attr('y', 22).attr('height', 10).attr('rx', 3).attr('fill', (s) => cor(s.s)).attr('opacity', (s) => s.a ? 1 : 0.45)
+        .append('title').text((s) => `${l.titular ? s.s : lc(s.s)}: ${s.a ? dt(s.a.toISOString()) : 'antes do registro'} → ${s.b >= now - 60000 ? 'agora' : dt(s.b.toISOString())}`);
+      if (l.fim) lg.append('text').attr('x', x(l.fim) + 6).attr('y', 32).attr('class', 'ev-st').text('saiu da disputa');
+      for (const pt of l.pts) {
+        const c = lg.append('circle').attr('class', 'ev-dot').attr('cx', x(pt.t)).attr('cy', 27).attr('r', pt.mudou || pt.inicio ? 6 : 4.5)
+          .attr('fill', pt.mudou || pt.inicio ? pt.cor : 'var(--color-panel)').attr('stroke', pt.mudou || pt.inicio ? 'var(--color-panel)' : 'var(--color-fg)').attr('stroke-width', pt.mudou || pt.inicio ? 2 : 1.5).attr('tabindex', 0);
+        const linhas = pt.e ? [dt(pt.e.data), `${pt.e.de && pt.e.de !== '—' ? pt.e.de : '—'} → ${pt.e.para && pt.e.para !== '—' ? pt.e.para : 'informação nova, sem mudança de status'}`, `Confirmação: ${pt.e.confiabilidade || '—'}`, `Fonte: ${pt.e.fonte || '—'}`] : [dt(pt.t.toISOString()), 'Primeira menção registrada', `Fonte: ${(Array.isArray(pt.n && pt.n.fontes) && pt.n.fontes[0] && pt.n.fontes[0].v) || '—'}`];
+        const titulo = pt.e ? pt.e.titulo : l.nome;
+        c.on('mousemove', (evt) => showTip(box, evt, titulo, linhas)).on('mouseleave', () => hideTip(box))
+          .on('focus', (evt) => { const r = evt.target.getBoundingClientRect(); showTip(box, { clientX: r.right, clientY: r.bottom }, titulo, linhas); }).on('blur', () => hideTip(box))
+          .on('click', (evt) => { evt.stopPropagation(); showTip(box, evt, titulo, linhas); });
+        if (pt.e && /^https:\/\//.test(pt.e.link || '')) c.on('dblclick', () => window.open(pt.e.link, '_blank', 'noopener'));
+      }
+    });
+    box.replaceChildren(svg.node());
+  }
+
+  function drawEvoCard(pos, nomes, ev, orgaos) {
+    const sel = document.getElementById('evo-sel'); const box = document.getElementById('evo-box'); if (!sel || !box) return;
+    if (!pos || !nomes || !ev) return;
+    const ativos = [...new Set([...nomes.map((n) => n.orgao_id), ...ev.filter((e) => e.eixo === 'Cargos' && pos.some((p) => p.id === e.ref_id && p.nivel === 'titular')).map((e) => e.orgao_id)])].filter(Boolean);
+    const recente = (id) => d3.max(ev.filter((e) => e.orgao_id === id && e.eixo === 'Cargos'), (e) => e.data) || '';
+    ativos.sort((a, b) => (recente(a) < recente(b) ? 1 : -1));
+    const nomeOrg = (id) => id === 'a-definir' ? 'Cargo ainda não definido' : orgName(orgaos, id);
+    if (!st.evo || !ativos.includes(st.evo)) st.evo = ativos[0] || '';
+    sel.replaceChildren(...ativos.map((id) => { const k = nomes.filter((n) => n.orgao_id === id).length; return new Option(`${nomeOrg(id)} (${k ? k + ' nome' + (k === 1 ? '' : 's') : 'só o titular'})`, id); }));
+    sel.value = st.evo;
+    if (!sel.dataset.wired) { sel.dataset.wired = '1'; sel.addEventListener('change', () => { st.evo = sel.value; draw(); }); }
+    legend('evo-leg', [...EVO_ETAPAS.slice(1).map((e) => [lc(e), evoCor(e)]), ['Descartado ou recusou', evoCor('🔴 DESCARTADO')]]);
+    legend('evo-leg2', [['Titular: permanência', titCor('Permanece')], ['Saída mencionada', titCor('Saída mencionada')], ['Saída em negociação', titCor('Saída em negociação')], ['Saída confirmada', titCor('Saída confirmada')], ['Sem informação', titCor('Sem informação')]]);
+    if (!st.evo) { box.replaceChildren(el('p', 'lx-empty', 'Nenhum órgão com nomes registrados ainda.')); return; }
+    drawEvolucao(box, st.evo, pos, nomes, ev, orgaos);
+  }
+
   function drawPainelTemas(orgaos, nomes, pols, ev) {
     const box = document.getElementById('painel-temas-box'); if (!box || !orgaos.length || !pols || !ev) return;
     const semana = new Date(Date.now() - 7 * 86400000).toISOString();
@@ -1385,7 +1509,7 @@ dash.calc('painel', {
     if (st.tab === 'politica-partidaria') { drawPartidos(parts, rows('t_balanco')); drawPartidosGraf(); }
     if (st.tab === 'politicas') { drawPoliticas(pols, orgaos); drawPolGraf(); }
     if (st.tab === 'reestruturacao') drawReestr(rows('t_reestr'), orgaos);
-    if (st.tab === 'linha-do-tempo') { drawTimeline(ev, orgaos); drawRitmo('ritmo2-box', 'ritmo2-leg'); }
+    if (st.tab === 'linha-do-tempo') { drawEvoCard(pos, nomes, ev, orgaos); drawTimeline(ev, orgaos); drawRitmo('ritmo2-box', 'ritmo2-leg'); }
     if (st.tab === 'pessoas') drawPessoas(nomes, pos, rows('t_transicao'), ev, pols, orgaos);
   }
   dash.onData(draw);
