@@ -335,6 +335,8 @@ svg.dz-donut { width: 100%; height: auto; }
 .dz-mini b { font-size: 1.7rem; font-weight: 700; font-variant-numeric: tabular-nums; }
 .dz-mini .dz-note { text-align: left; font-size: 11px; }
 .dz-lead { font-size: 1.05rem; font-weight: 700; margin: 0; }
+.dz-a-day .dz-lead { font-size: 1.25rem; font-weight: 600; margin-top: 4px; }
+.dz-a-day p.dz-mut { font-size: 16px; line-height: 1.75; color: var(--color-fg); opacity: .9; max-width: 105ch; margin: 6px 0 0; }
 @media (max-width: 1000px) { .dz { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); grid-template-areas: "nov gauge" "feed feed" "donut donut" "part part" "rank rank" "pol pol" "minis minis" "day day"; } }
 @media (max-width: 560px) { .dz { grid-template-columns: minmax(0, 1fr); grid-template-areas: "nov" "gauge" "feed" "donut" "part" "rank" "pol" "minis" "day"; } .dz-hide { display: none; } .dz-pill-trunc { max-width: 6.5rem; } .dz-kpis { grid-template-columns: 1fr 1fr; } .dz-donutwrap { grid-template-columns: 110px 1fr; } }
 .lx-stale { margin: 8px 0 0; padding: 8px 12px; border-radius: 8px; border: 1px solid var(--color-warn); color: var(--color-warn); font-size: var(--cds-font-size-caption); }
@@ -391,7 +393,7 @@ svg.dz-donut { width: 100%; height: auto; }
 .dz-head h3 { font-weight: 600; }
 .lx-side .lx-tab { font-size: 13.5px; }
 .hb-desc { font-family: var(--font-edit); font-size: 15.5px; line-height: 1.65; color: rgba(232,239,255,.88); }
-.lx-metodo > p, .lx-metodo li, #cons-leit, .dz-lead, .lx-read li > div > span:first-child { font-family: var(--font-edit); font-size: 15px; line-height: 1.7; }
+.lx-metodo > p, .lx-metodo li, #cons-leit, .dz-lead, .dz-a-day p.dz-mut, .lx-read li > div > span:first-child { font-family: var(--font-edit); font-size: 15px; line-height: 1.7; }
 .lx-metodo h3 { font-family: var(--font-head); font-weight: 600; }
 /* o título interno da página fica redundante com o banner */
 #topo > header > h1 { display: none; }
