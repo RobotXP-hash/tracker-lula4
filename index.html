@@ -187,6 +187,51 @@ img { max-width: 100%; }
 .lx-evo-leg .lg-s { grid-column: 2; font-size: var(--cds-font-size-caption); color: var(--color-fg-muted); }
 .lx-evo-head { display: flex; flex-wrap: wrap; gap: var(--cds-gap-sm); align-items: center; justify-content: space-between; }
 .lx-evo-legs { display: flex; flex-direction: column; gap: 4px; }
+
+/* ---------- sidebar ---------- */
+:root { --side-w: 272px; --side-mini: 72px; }
+#topo { --side-bg: #f1f3f8; --side-fg: #1d2433; --side-mut: #5d6679; --side-line: #dfe3ec; --side-hover: rgba(29,36,51,.06); --side-act: #2a78d6; --side-act-fg: #ffffff; }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) #topo, :root:not([data-theme="light"]) .lx-side { --side-bg: #0a1120; --side-fg: #e9eef8; --side-mut: #8e9bb6; --side-line: #1f2a44; --side-hover: rgba(255,255,255,.06); --side-act: #3987e5; --side-act-fg: #ffffff; } }
+:root[data-theme="dark"] #topo, :root[data-theme="dark"] .lx-side { --side-bg: #0a1120; --side-fg: #e9eef8; --side-mut: #8e9bb6; --side-line: #1f2a44; --side-hover: rgba(255,255,255,.06); --side-act: #3987e5; --side-act-fg: #ffffff; }
+.lx-side { --side-bg: #f1f3f8; --side-fg: #1d2433; --side-mut: #5d6679; --side-line: #dfe3ec; --side-hover: rgba(29,36,51,.06); --side-act: #2a78d6; --side-act-fg: #ffffff; }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .lx-side { --side-bg: #0a1120; --side-fg: #e9eef8; --side-mut: #8e9bb6; --side-line: #1f2a44; --side-hover: rgba(255,255,255,.06); --side-act: #3987e5; } }
+:root[data-theme="dark"] .lx-side { --side-bg: #0a1120; --side-fg: #e9eef8; --side-mut: #8e9bb6; --side-line: #1f2a44; --side-hover: rgba(255,255,255,.06); --side-act: #3987e5; }
+body.lx-has-side { padding-left: var(--side-w); transition: padding-left .18s ease; }
+body.lx-has-side.lx-mini { padding-left: var(--side-mini); }
+.lx-side { position: fixed; inset: 0 auto 0 0; width: var(--side-w); z-index: 40; background: var(--side-bg); color: var(--side-fg); border-right: 1px solid var(--side-line); display: flex; flex-direction: column; padding: 14px 12px; gap: 2px; overflow-y: auto; transition: width .18s ease, transform .2s ease; font-family: var(--font-sans, inherit); }
+.lx-side-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 4px 6px 14px; border-bottom: 1px solid var(--side-line); margin-bottom: 10px; }
+.lx-side-brand { display: flex; align-items: center; gap: 10px; font-weight: 700; font-size: 15px; letter-spacing: .01em; white-space: nowrap; overflow: hidden; }
+.lx-side-logo { width: 30px; height: 30px; border-radius: 8px; background: var(--side-act); color: #fff; display: grid; place-items: center; flex: none; }
+.lx-side-tog { flex: none; width: 30px; height: 30px; border-radius: 8px; border: 1px solid var(--side-line); background: transparent; color: var(--side-fg); cursor: pointer; display: grid; place-items: center; }
+.lx-side-tog:hover { background: var(--side-hover); }
+.lx-side-sec { font-size: 11px; text-transform: uppercase; letter-spacing: .08em; color: var(--side-mut); padding: 12px 10px 4px; white-space: nowrap; }
+.lx-side .lx-tab { all: unset; box-sizing: border-box; display: flex; align-items: center; gap: 12px; width: 100%; padding: 9px 10px; border-radius: 10px; font-size: 14px; font-weight: 500; line-height: 1.25; color: var(--side-fg); cursor: pointer; white-space: normal; position: relative; }
+.lx-side .lx-tab svg { width: 19px; height: 19px; flex: none; stroke: currentColor; fill: none; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; opacity: .9; }
+.lx-side .lx-tab:hover { background: var(--side-hover); }
+.lx-side .lx-tab[aria-selected="true"] { background: var(--side-act); color: var(--side-act-fg); font-weight: 600; box-shadow: 0 4px 14px color-mix(in srgb, var(--side-act) 35%, transparent); }
+.lx-side .lx-tab[aria-selected="true"] svg { opacity: 1; }
+.lx-side .lx-tab:focus-visible { outline: 2px solid var(--side-act); outline-offset: 2px; }
+.lx-side-foot { margin-top: auto; padding: 14px 10px 4px; font-size: 12px; color: var(--side-mut); border-top: 1px solid var(--side-line); white-space: nowrap; }
+body.lx-mini .lx-side { width: var(--side-mini); }
+body.lx-mini .lx-side .lx-tab-l, body.lx-mini .lx-side-sec, body.lx-mini .lx-side-name, body.lx-mini .lx-side-foot { display: none; }
+body.lx-mini .lx-side .lx-tab { justify-content: center; padding: 10px 0; }
+body.lx-mini .lx-side-head { flex-direction: column; padding-inline: 0; }
+body.lx-mini .lx-side-sec-sep { display: block; height: 1px; background: var(--side-line); margin: 8px 6px; }
+.lx-side-sec-sep { display: none; }
+.lx-mbar { display: none; }
+.lx-scrim { display: none; }
+@media (max-width: 900px) {
+  body.lx-has-side, body.lx-has-side.lx-mini { padding-left: 0; }
+  .lx-side, body.lx-mini .lx-side { width: min(84vw, 290px); transform: translateX(-102%); box-shadow: 0 10px 40px rgba(0,0,0,.35); }
+  body.lx-mini .lx-side .lx-tab-l, body.lx-mini .lx-side-sec, body.lx-mini .lx-side-name, body.lx-mini .lx-side-foot { display: revert; }
+  body.lx-mini .lx-side .lx-tab { justify-content: flex-start; padding: 9px 10px; }
+  body.lx-side-open .lx-side { transform: none; }
+  body.lx-side-open .lx-scrim { display: block; position: fixed; inset: 0; z-index: 39; background: rgba(0,0,0,.45); }
+  .lx-side-tog { display: none; }
+  .lx-mbar { display: flex; position: sticky; top: 0; z-index: 30; align-items: center; gap: 10px; padding: 10px 16px; background: var(--side-bg, var(--color-bg)); color: var(--side-fg, var(--color-fg)); border-bottom: 1px solid var(--side-line, var(--color-border-line)); }
+  .lx-mbar button { all: unset; display: flex; align-items: center; gap: 8px; font-weight: 600; font-size: 14px; cursor: pointer; padding: 6px 12px; border-radius: 999px; background: var(--side-act, #2a78d6); color: #fff; }
+  .lx-mbar span { font-size: 14px; font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+}
 .lx-grid2 { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 24rem), 1fr)); gap: var(--cds-gap-md); }
 .lx-read { display: flex; flex-direction: column; gap: var(--cds-gap-sm); }
 .lx-read details { border-bottom: 1px solid var(--color-border-line); padding-bottom: var(--cds-pad-sm); }
@@ -221,7 +266,7 @@ img { max-width: 100%; }
 .lx-hub-go { font-size: var(--cds-font-size-caption); color: var(--color-fg-muted); }
 .lx-hubcard:hover .lx-hub-go { color: var(--color-fg); }
 .lx-hubcard.lx-hub-main { grid-column: 1 / -1; min-height: 0; }
-.lx-tabs { position: sticky; top: env(safe-area-inset-top, 0px); z-index: 4; background: var(--color-bg); padding-top: 4px; }
+
 #topo { --dz-c1: #3b82f6; --dz-c2: #f2c94c; --dz-c3: #f2994a; --dz-c4: #a78bfa; --dz-c5: #27ae60; --dz-c6: #2fd07a; --dz-c7: #eb5757; --dz-c8: #8a94a6; --dz-c9: #56b4e9; }
 .dz { --dz-track: color-mix(in srgb, var(--color-fg) 12%, transparent); --dz-row: color-mix(in srgb, var(--color-fg) 4%, transparent);
   display: grid; gap: 12px; grid-template-columns: minmax(0, 1fr) minmax(0, 2fr) minmax(0, 1.5fr);
@@ -802,14 +847,48 @@ dash.calc('painel', {
   const rows = (id) => { const d = dash.data(id); return d.status === 'ok' ? d.data : null; };
   const failed = (id) => dash.data(id).status === 'error';
 
+
+  const ICON = {
+    'como-ler': '<path d="M2 5h6a4 4 0 0 1 4 4v11a3 3 0 0 0-3-3H2z"/><path d="M22 5h-6a4 4 0 0 0-4 4v11a3 3 0 0 1 3-3h7z"/>',
+    'painel': '<rect x="3" y="3" width="7" height="9" rx="1.5"/><rect x="14" y="3" width="7" height="5" rx="1.5"/><rect x="14" y="12" width="7" height="9" rx="1.5"/><rect x="3" y="16" width="7" height="5" rx="1.5"/>',
+    'inicio': '<path d="M3 10.5 12 3l9 7.5"/><path d="M5 9.5V21h14V9.5"/><path d="M10 21v-6h4v6"/>',
+    'temas': '<circle cx="7" cy="7" r="3"/><circle cx="17" cy="7" r="3"/><circle cx="7" cy="17" r="3"/><circle cx="17" cy="17" r="3"/>',
+    'composicao': '<circle cx="9" cy="8" r="3.2"/><path d="M3 20c.6-3.4 3-5.5 6-5.5s5.4 2.1 6 5.5"/><circle cx="17.5" cy="9" r="2.5"/><path d="M16 14.6c2.6.2 4.4 2 5 5.4"/>',
+    'orgaos': '<path d="M3 21h18"/><path d="M4 10h16"/><path d="M12 3 4 7v3h16V7z"/><path d="M6 10v8M10 10v8M14 10v8M18 10v8"/>',
+    'transicao': '<path d="M4 7h13l-3-3"/><path d="M20 17H7l3 3"/>',
+    'politica-partidaria': '<path d="M5 21V4"/><path d="M5 4h11l-2 4 2 4H5"/>',
+    'politicas': '<path d="M9 6h11M9 12h11M9 18h11"/><path d="m3 6 1.5 1.5L7 5"/><path d="m3 12 1.5 1.5L7 11"/><path d="m3 18 1.5 1.5L7 17"/>',
+    'reestruturacao': '<rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/><path d="M10 6.5h4a3 3 0 0 1 3 3V14"/><path d="m15 12 2 2 2-2"/>',
+    'linha-do-tempo': '<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>',
+    'pessoas': '<circle cx="11" cy="11" r="6.5"/><path d="m20 20-4.2-4.2"/>',
+  };
+  const SECOES = { 'como-ler': 'Começo', 'composicao': 'Governo', 'politica-partidaria': 'Política e prioridades', 'linha-do-tempo': 'Acompanhar' };
+  const svgIcon = (id) => { const s = document.createElementNS('http://www.w3.org/2000/svg', 'svg'); s.setAttribute('viewBox', '0 0 24 24'); s.setAttribute('aria-hidden', 'true'); s.innerHTML = ICON[id] || '<circle cx="12" cy="12" r="8"/>'; return s; };
   // ---------- state ----------
   const st = { tab: 'painel', f: { q: '', orgao: '', partido: '', status: '', area: '', conf: '', eixo: '', desde: '' }, quick: '', org: '', cons: '', pessoa: '', tema: '' };
   const nav = document.getElementById('lx-tabs');
+  // sidebar: o menu sai do topo e vira uma barra lateral fixa
+  nav.className = 'lx-side'; nav.setAttribute('role', 'tablist');
+  const logo = el('span', 'lx-side-logo'); logo.append(svgIcon('painel'));
+  const tog = el('button', 'lx-side-tog'); tog.type = 'button'; tog.setAttribute('aria-label', 'Recolher ou expandir o menu'); tog.innerHTML = '<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m11 17-5-5 5-5"/><path d="m18 17-5-5 5-5"/></svg>';
+  const setMini = (m) => { document.body.classList.toggle('lx-mini', m); tog.firstChild.style.transform = m ? 'rotate(180deg)' : ''; try { localStorage.setItem('radar-side-mini', m ? '1' : '0'); } catch (e) {} };
+  tog.addEventListener('click', () => setMini(!document.body.classList.contains('lx-mini')));
+  nav.append(el('div', 'lx-side-head', el('span', 'lx-side-brand', logo, el('span', 'lx-side-name', 'Radar Lula 4')), tog));
   TABS.forEach(([id, label]) => {
-    const b = el('button', 'lx-tab', label); b.type = 'button'; b.setAttribute('role', 'tab'); b.dataset.tab = id;
-    b.addEventListener('click', () => { st.tab = id; dash.setLink(id); draw(); });
+    if (SECOES[id]) nav.append(el('div', 'lx-side-sec', SECOES[id]), el('div', 'lx-side-sec-sep'));
+    const b = el('button', 'lx-tab', svgIcon(id), el('span', 'lx-tab-l', label)); b.type = 'button'; b.setAttribute('role', 'tab'); b.dataset.tab = id; b.title = label;
+    b.addEventListener('click', () => { st.tab = id; dash.setLink(id); document.body.classList.remove('lx-side-open'); draw(); window.scrollTo({ top: 0 }); });
     nav.append(b);
   });
+  nav.append(el('div', 'lx-side-foot', 'Feito por Júlia Santos'));
+  document.body.prepend(nav); document.body.classList.add('lx-has-side');
+  const scrim = el('div', 'lx-scrim'); scrim.addEventListener('click', () => document.body.classList.remove('lx-side-open')); document.body.append(scrim);
+  const mbtn = el('button', ''); mbtn.type = 'button'; mbtn.innerHTML = '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"/></svg>Menu';
+  mbtn.addEventListener('click', () => document.body.classList.add('lx-side-open'));
+  const mcur = el('span', ''); const mbar = el('div', 'lx-mbar', mbtn, mcur);
+  document.body.insertBefore(mbar, nav.nextSibling);
+  document.addEventListener('keydown', (e) => { if (e.key === 'Escape') document.body.classList.remove('lx-side-open'); });
+  try { if (localStorage.getItem('radar-side-mini') === '1') setMini(true); } catch (e) {}
   const quick = document.getElementById('lx-quick');
   QUICK.forEach(([id, label]) => {
     const b = el('button', 'lx-chip', label); b.type = 'button'; b.dataset.q = id; b.setAttribute('aria-pressed', 'false');
@@ -1545,6 +1624,7 @@ dash.calc('painel', {
   // ---------- draw ----------
   function draw() {
     nav.querySelectorAll('.lx-tab').forEach((b) => b.setAttribute('aria-selected', String(b.dataset.tab === st.tab)));
+    { const t = TABS.find((x) => x[0] === st.tab); if (t) mcur.textContent = t[1]; }
     quick.querySelectorAll('.lx-chip').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.q === st.quick)));
     document.querySelectorAll('[data-pane]').forEach((s) => { s.hidden = s.dataset.pane !== st.tab; });
     const showF = !['painel', 'inicio', 'pessoas', 'temas', 'como-ler'].includes(st.tab) && !(st.tab === 'orgaos' && st.org);
