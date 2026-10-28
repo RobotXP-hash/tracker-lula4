@@ -341,15 +341,94 @@ svg.dz-donut { width: 100%; height: auto; }
 [data-dash-source-state=refreshing] { opacity: .5; transition: opacity var(--cds-dur-slow); }
 @media (max-width: 640px) { .lx-hide-n { display: none; } .lx-item { grid-template-columns: 1fr; } .lx-kv { grid-template-columns: 1fr; } }
 
+
+/* ---------- banner (cabeçalho) ---------- */
+.hb { position: relative; overflow: hidden; color: #eef3ff; background:
+  radial-gradient(120% 140% at 100% 0%, rgba(57,135,229,.35) 0%, rgba(57,135,229,0) 55%),
+  linear-gradient(118deg, #070d1b 0%, #0d1838 48%, #142b63 100%); border-bottom: 1px solid rgba(110,168,255,.18); }
+.hb::before { content: ""; position: absolute; inset: 0; background-image: radial-gradient(rgba(255,255,255,.08) 1px, transparent 1px); background-size: 22px 22px; mask-image: linear-gradient(90deg, transparent 0%, #000 55%, #000 100%); -webkit-mask-image: linear-gradient(90deg, transparent 0%, #000 55%, #000 100%); pointer-events: none; }
+.hb-in { position: relative; max-width: 1320px; margin-inline: auto; padding: 30px max(20px, env(safe-area-inset-right, 0px)) 30px max(20px, env(safe-area-inset-left, 0px)); display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 360px); align-items: center; gap: 12px 32px; min-height: 230px; }
+.hb-txt { position: relative; z-index: 2; display: flex; flex-direction: column; gap: 12px; min-width: 0; }
+.hb-eyebrow { display: inline-flex; align-items: center; gap: 8px; font-size: 11.5px; font-weight: 600; letter-spacing: .14em; text-transform: uppercase; color: #9fc3ff; }
+.hb-live { width: 8px; height: 8px; border-radius: 50%; background: #2fd07a; box-shadow: 0 0 0 0 rgba(47,208,122,.6); animation: hbPulse 2s infinite; }
+@keyframes hbPulse { 0% { box-shadow: 0 0 0 0 rgba(47,208,122,.55); } 70% { box-shadow: 0 0 0 9px rgba(47,208,122,0); } 100% { box-shadow: 0 0 0 0 rgba(47,208,122,0); } }
+.hb-title { margin: 0; font-family: var(--font-sans); font-size: clamp(2.1rem, 4.4vw, 3.4rem); line-height: 1; letter-spacing: -.01em; font-weight: 300; color: #ffffff; }
+.hb-title b { font-weight: 700; background: linear-gradient(90deg, #5aa2ff 0%, #8fd3ff 60%, #f2c94c 130%); -webkit-background-clip: text; background-clip: text; color: transparent; }
+.hb-line { display: flex; align-items: center; gap: 0; max-width: 420px; }
+.hb-line i { display: block; height: 2px; flex: 1; background: linear-gradient(90deg, #f2c94c, rgba(242,201,76,.0)); border-radius: 2px; }
+.hb-line s { display: block; width: 9px; height: 9px; border-radius: 50%; background: #f2c94c; margin-right: 6px; text-decoration: none; }
+.hb-desc { margin: 0; max-width: 62ch; font-size: 14.5px; line-height: 1.55; color: rgba(232,239,255,.82); }
+.hb-row { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 12px; margin-top: 4px; }
+.hb-cta { display: inline-flex; align-items: center; gap: 8px; font-size: 13.5px; font-weight: 600; text-decoration: none; padding: 9px 16px; border-radius: 999px; transition: transform .12s ease, background .12s ease; }
+.hb-cta:hover { transform: translateY(-1px); }
+.hb-cta.p { background: #3987e5; color: #fff; box-shadow: 0 6px 20px rgba(57,135,229,.4); }
+.hb-cta.p:hover { background: #4b95ee; }
+.hb-cta.s { color: #e6eeff; border: 1px solid rgba(160,195,255,.35); background: rgba(255,255,255,.04); }
+.hb-cta.s:hover { background: rgba(255,255,255,.09); }
+.hb-cta:focus-visible, .hb-theme:focus-visible { outline: 2px solid #8fd3ff; outline-offset: 2px; }
+.hb-by { font-size: 12.5px; color: rgba(232,239,255,.7); display: inline-flex; align-items: center; gap: 6px; margin-left: 4px; }
+.hb-by::before { content: ""; width: 18px; height: 1px; background: rgba(232,239,255,.4); }
+.hb-artwrap { position: relative; z-index: 1; display: flex; justify-content: flex-end; }
+.hb-art { width: 100%; max-width: 360px; height: auto; filter: drop-shadow(0 10px 30px rgba(0,0,0,.35)); }
+.hb-sweep { transform-origin: 200px 168px; animation: hbSpin 6s linear infinite; }
+@keyframes hbSpin { to { transform: rotate(-360deg); } }
+.hb-blips circle { animation: hbBlink 3s ease-in-out infinite; }
+.hb-blips circle:nth-child(2) { animation-delay: .8s; } .hb-blips circle:nth-child(3) { animation-delay: 1.6s; } .hb-blips circle:nth-child(4) { animation-delay: 2.2s; }
+@keyframes hbBlink { 0%, 100% { opacity: .25; } 40% { opacity: 1; } }
+@media (prefers-reduced-motion: reduce) { .hb-sweep, .hb-blips circle, .hb-live { animation: none; } }
+.hb-theme { position: absolute; top: 14px; right: max(20px, env(safe-area-inset-right, 0px)); z-index: 3; font: inherit; font-size: 12.5px; color: #e6eeff; background: rgba(255,255,255,.06); border: 1px solid rgba(160,195,255,.3); border-radius: 999px; padding: 4px 12px; cursor: pointer; backdrop-filter: blur(4px); }
+.hb-theme:hover { background: rgba(255,255,255,.12); }
+@media (max-width: 760px) {
+  .hb-in { grid-template-columns: 1fr; min-height: 0; padding-top: 52px; padding-bottom: 26px; }
+  .hb-artwrap { position: absolute; right: -40px; top: 10px; width: 260px; opacity: .28; }
+  .hb-desc { font-size: 14px; }
+}
+/* o título interno da página fica redundante com o banner */
+#topo > header > h1 { display: none; }
 </style>
 </head>
 <body>
-<div class="mast"><div class="mast-in">
-  <span class="mast-name">Radar Lula 4</span>
-  <span class="mast-desc">Monitor da formação do novo governo e das prioridades do 4º mandato. Quem fica, quem sai e quem está sendo considerado em cada pasta, o espaço dos partidos e as mudanças de políticas públicas, sempre com fonte e nível de confirmação. Atualizado a cada 3 horas.</span>
-  <span class="mast-by">Feito por Júlia Santos</span>
-  <button class="mast-theme" id="theme-btn" type="button" aria-label="Alternar tema claro ou escuro">Tema</button>
-</div></div>
+<header class="hb" role="banner"><div class="hb-in">
+  <div class="hb-txt">
+    <span class="hb-eyebrow"><span class="hb-live" aria-hidden="true"></span>Monitor do 4º mandato · atualizado a cada 3 horas</span>
+    <h1 class="hb-title">Radar <b>Lula 4</b></h1>
+    <span class="hb-line" aria-hidden="true"><s></s><i></i></span>
+    <p class="hb-desc">A formação do novo governo e as prioridades do 4º mandato, em um só lugar: quem fica, quem sai e quem está sendo considerado em cada pasta, o espaço dos partidos e as mudanças de políticas públicas. Sempre com fonte e nível de confirmação.</p>
+    <div class="hb-row">
+      <a class="hb-cta p" href="#como-ler">Como ler o Radar</a>
+      <a class="hb-cta s" href="#linha-do-tempo">Ver as novidades</a>
+      <span class="hb-by">Feito por Júlia Santos</span>
+    </div>
+  </div>
+  <div class="hb-artwrap"><svg class="hb-art" viewBox="0 0 360 240" aria-hidden="true" focusable="false">
+  <defs>
+    <radialGradient id="hbGlow" cx="50%" cy="62%" r="55%"><stop offset="0" stop-color="#3987e5" stop-opacity=".45"/><stop offset="1" stop-color="#3987e5" stop-opacity="0"/></radialGradient>
+    <linearGradient id="hbSweep" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#5aa2ff" stop-opacity="0"/><stop offset="1" stop-color="#5aa2ff" stop-opacity=".55"/></linearGradient>
+    <linearGradient id="hbBuild" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffffff"/><stop offset="1" stop-color="#c9d8f5"/></linearGradient>
+  </defs>
+  <circle cx="200" cy="168" r="150" fill="url(#hbGlow)"/>
+  <g fill="none" stroke="#6ea8ff" stroke-opacity=".35" stroke-width="1.2">
+    <circle cx="200" cy="168" r="44"/><circle cx="200" cy="168" r="88"/><circle cx="200" cy="168" r="132"/>
+    <path d="M200 30v276M62 168h276" stroke-dasharray="3 6"/>
+  </g>
+  <g class="hb-sweep"><path d="M200 168 L332 168 A132 132 0 0 0 293 75 Z" fill="url(#hbSweep)"/><line x1="200" y1="168" x2="332" y2="168" stroke="#8cc0ff" stroke-width="1.6"/></g>
+  <g class="hb-blips">
+    <circle cx="276" cy="112" r="4.5" fill="#f2c94c"/><circle cx="128" cy="96" r="3.5" fill="#2fd07a"/><circle cx="300" cy="200" r="3.5" fill="#f2c94c"/><circle cx="96" cy="190" r="3" fill="#6ea8ff"/>
+  </g>
+  <g class="hb-congress">
+    <rect x="70" y="196" width="260" height="7" rx="2" fill="url(#hbBuild)" opacity=".95"/>
+    <path d="M110 196a28 28 0 0 1 56 0z" fill="url(#hbBuild)"/>
+    <path d="M232 168h72a36 28 0 0 1-72 0z" fill="url(#hbBuild)" transform="translate(0 0)"/>
+    <rect x="263" y="168" width="10" height="28" fill="url(#hbBuild)" opacity=".9"/>
+    <rect x="184" y="92" width="13" height="104" rx="1.5" fill="url(#hbBuild)"/>
+    <rect x="203" y="92" width="13" height="104" rx="1.5" fill="url(#hbBuild)"/>
+    <rect x="197" y="120" width="6" height="6" fill="#c9d8f5"/>
+    <g stroke="#0e1628" stroke-opacity=".18" stroke-width="1"><path d="M186 104h9M186 116h9M186 140h9M186 152h9M186 164h9M186 176h9M205 104h9M205 116h9M205 140h9M205 152h9M205 164h9M205 176h9"/></g>
+  </g>
+</svg></div>
+</div>
+<button class="hb-theme" id="theme-btn" type="button" aria-label="Alternar tema claro ou escuro">Tema</button>
+</header>
 <main class="wrap">
 
 
@@ -869,7 +948,7 @@ dash.calc('painel', {
   const nav = document.getElementById('lx-tabs');
   // sidebar: o menu sai do topo e vira uma barra lateral fixa
   nav.className = 'lx-side'; nav.setAttribute('role', 'tablist');
-  const logo = el('span', 'lx-side-logo'); logo.append(svgIcon('painel'));
+  const logo = el('span', 'lx-side-logo'); logo.innerHTML = window.__SITE__ ? '<svg viewBox="0 0 24 24" aria-hidden="true" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M3 19h18"/><path d="M5 19a3.5 3.5 0 0 1 7 0"/><path d="M14 15.5h6a3 2.5 0 0 1-6 0"/><path d="M10.5 19V9M13 19V9"/><path d="M12 9a7 7 0 0 1 7-5" opacity=".75"/><path d="M12 9a4 4 0 0 1 4-3" opacity=".75"/></svg>' : ''; if (!window.__SITE__) logo.append(svgIcon('painel'));
   const tog = el('button', 'lx-side-tog'); tog.type = 'button'; tog.setAttribute('aria-label', 'Recolher ou expandir o menu'); tog.innerHTML = '<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m11 17-5-5 5-5"/><path d="m18 17-5-5 5-5"/></svg>';
   const setMini = (m) => { document.body.classList.toggle('lx-mini', m); tog.firstChild.style.transform = m ? 'rotate(180deg)' : ''; try { localStorage.setItem('radar-side-mini', m ? '1' : '0'); } catch (e) {} };
   tog.addEventListener('click', () => setMini(!document.body.classList.contains('lx-mini')));
