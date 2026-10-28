@@ -232,6 +232,31 @@ body.lx-mini .lx-side-sec-sep { display: block; height: 1px; background: var(--s
   .lx-mbar button { all: unset; display: flex; align-items: center; gap: 8px; font-weight: 600; font-size: 14px; cursor: pointer; padding: 6px 12px; border-radius: 999px; background: var(--side-act, #2a78d6); color: #fff; }
   .lx-mbar span { font-size: 14px; font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 }
+
+/* ---------- promessas e acordos ---------- */
+.pr-bar { display: flex; height: 14px; border-radius: 999px; overflow: hidden; background: var(--color-border-line); }
+.pr-bar i { display: block; height: 100%; }
+.pr-kpis { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 9.5rem), 1fr)); gap: var(--cds-gap-sm); }
+.pr-kpis div { display: flex; flex-direction: column; gap: 2px; padding: 10px 12px; border-radius: 10px; background: color-mix(in srgb, var(--color-fg) 4%, transparent); }
+.pr-kpis b { font-size: 1.5rem; line-height: 1.1; font-variant-numeric: tabular-nums; }
+.pr-kpis span { font-size: var(--cds-font-size-caption); color: var(--color-fg-muted); }
+.pr-kpis i { display: inline-block; width: 9px; height: 9px; border-radius: 3px; margin-right: 6px; vertical-align: 1px; }
+.pr-eixos { display: flex; flex-direction: column; gap: 6px; }
+.pr-eixos details { border: 1px solid var(--color-border-line); border-radius: 10px; padding: 8px 12px; }
+.pr-eixos summary { cursor: pointer; display: flex; flex-wrap: wrap; align-items: center; gap: 6px 12px; font-weight: 600; }
+.pr-eixos summary .pr-mini { flex: 1 1 140px; max-width: 220px; height: 8px; }
+.pr-eixos summary small { font-weight: 400; color: var(--color-fg-muted); }
+.pr-list { list-style: none; margin: 8px 0 0; padding: 0; display: flex; flex-direction: column; }
+.pr-list li { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 4px 12px; padding: 8px 0; border-top: 1px solid var(--color-border-line); }
+.pr-list .pr-t { font-size: 14px; }
+.pr-list .pr-m { grid-column: 1 / -1; font-size: var(--cds-font-size-caption); color: var(--color-fg-muted); display: flex; flex-wrap: wrap; gap: 4px 10px; }
+.ac-meet { display: flex; flex-direction: column; gap: 10px; }
+.ac-meet .ac-head { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 6px 12px; }
+.ac-meet .ac-date { font-size: var(--cds-font-size-caption); color: var(--color-fg-muted); font-variant-numeric: tabular-nums; }
+.ac-people { display: flex; flex-wrap: wrap; gap: 6px; }
+.ac-items { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 0; }
+.ac-items li { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 4px 12px; padding: 10px 0; border-top: 1px solid var(--color-border-line); }
+.ac-items .ac-m { grid-column: 1 / -1; font-size: var(--cds-font-size-caption); color: var(--color-fg-muted); display: flex; flex-wrap: wrap; gap: 4px 10px; }
 .lx-grid2 { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 24rem), 1fr)); gap: var(--cds-gap-md); }
 .lx-read { display: flex; flex-direction: column; gap: var(--cds-gap-sm); }
 .lx-read details { border-bottom: 1px solid var(--color-border-line); padding-bottom: var(--cds-pad-sm); }
@@ -601,6 +626,14 @@ svg.dz-donut { width: 100%; height: auto; }
   </section>
 
   <section id="politicas" data-pane="politicas" class="lx" hidden>
+    <div class="lx-card" id="promessas" data-source="t_promessa t_politica">
+      <h2>Promessas do plano de governo</h2>
+      <p class="lx-muted">Inventário dos compromissos do programa registrado no TSE, organizado pelos 13 eixos. Cada promessa é ligada às políticas que o Radar acompanha; o status vem dessas políticas. "Sem movimentação registrada" quer dizer que ainda não houve anúncio, proposta ou ato sobre ela. Fonte: <a href="https://static.congressoemfoco.com.br/2026/08/08/attachment/2026/08/08/32ce89_programa_governo_lula_2026.pdf" target="_blank" rel="noopener">íntegra do programa (08/08/2026)</a>; nos eixos 8 a 13, a parte final do PDF foi conferida em resumos da imprensa.</p>
+      <div class="pr-bar" id="pr-bar" aria-hidden="true"></div>
+      <div class="pr-kpis" id="pr-kpis"></div>
+      <div class="lx-row"><input class="lx-in" type="search" id="pr-q" placeholder="Buscar promessa…" aria-label="Buscar promessa" style="flex: 1 1 14rem"><select class="lx-in" id="pr-st" aria-label="Situação da promessa"></select></div>
+      <div class="pr-eixos" id="pr-eixos"></div>
+    </div>
     <div class="lx-grid2">
       <div class="lx-card" id="pol-tipo">
         <h2>O que o governo pretende fazer</h2>
@@ -624,6 +657,15 @@ svg.dz-donut { width: 100%; height: auto; }
         </table>
       </div>
     </div>
+  </section>
+
+  <section id="acordos" data-pane="acordos" class="lx" hidden>
+    <div class="lx-card">
+      <h2>Agenda e acordos</h2>
+      <p class="lx-muted">Reuniões políticas relevantes do presidente e o que foi combinado em cada uma, ponto por ponto. Cada ponto mostra quem relatou e o nível de confirmação, e o status muda conforme o acordo é cumprido, descumprido ou desmentido.</p>
+      <div class="lx-row" id="ac-resumo"></div>
+    </div>
+    <div id="ac-list" class="lx" data-source="t_reuniao t_acordo"></div>
   </section>
 
   <section id="reestruturacao" data-pane="reestruturacao" class="lx" hidden>
@@ -662,7 +704,7 @@ svg.dz-donut { width: 100%; height: auto; }
       <p>O Radar Lula 4 acompanha, em um só lugar, a montagem do governo federal para o mandato 2027–2031: quem pode ocupar cada cargo, como os partidos e grupos se acomodam, quais órgãos mudam de estrutura e quais promessas e políticas avançam, mudam ou ficam paradas. Cobre todo o Poder Executivo federal: Presidência, ministérios, agências reguladoras, autarquias, fundações, bancos e empresas estatais.</p>
 
       <h3>De onde vêm as informações</h3>
-      <p>Cada registro traz a fonte, com link e data. Para atos e confirmações, a prioridade é o Diário Oficial da União, o Planalto, os ministérios e os órgãos oficiais. Para negociações e bastidores, entram agências e veículos nacionais (Agência Brasil, Reuters, Valor, Folha, Estadão, O Globo, Poder360, CNN Brasil e outros), com confirmação cruzada sempre que possível.</p>
+      <p>Cada registro traz a fonte, com link e data. Para atos e confirmações, a prioridade são as fontes oficiais: Diário Oficial da União, Planalto, ministérios, Agência Gov, Agência Brasil, Agência Senado e Agência Câmara. Quando a página oficial não pode ser lida diretamente, o ato é confirmado pela agência oficial ou pela imprensa que o reproduz, sempre com o link. Para negociações e bastidores, entram agências e veículos nacionais (Agência Brasil, Reuters, Valor, Folha, Estadão, O Globo, Poder360, CNN Brasil e outros), com confirmação cruzada sempre que possível.</p>
 
       <h3>Com que frequência é atualizado</h3>
       <p>Há uma checagem automática a cada três horas (1h17, 4h17, 7h17, 10h17, 13h17, 16h17, 19h17 e 22h17, horário de Brasília) e um consolidado do dia às 22h47. O Radar só muda quando há informação nova; matéria que repete o que já está registrado não vira novidade. Se a última checagem tiver mais de quatro horas e meia, um aviso aparece no topo da página.</p>
@@ -692,6 +734,12 @@ svg.dz-donut { width: 100%; height: auto; }
 
       <h3>Políticas públicas</h3>
       <p>Cada política tem um tipo (promessa eleitoral, proposta, diretriz, mudança de política, nova política, continuidade, expansão, revisão, redução ou encerramento), uma natureza (discurso, promessa, proposta, decisão, ação, implementação ou entrega) e um status (anunciado, em formulação, em negociação, em implementação, implementado, abandonado/revisto ou sem avanço). Uma declaração do presidente é registrada como discurso ou promessa, nunca como política implementada.</p>
+
+      <h3>Promessas do plano de governo</h3>
+      <p>O Radar mantém o inventário dos compromissos do programa registrado no TSE em 8 de agosto de 2026, organizado pelos 13 eixos. Cada promessa é ligada às políticas que o Radar acompanha. A situação dela vem dessas políticas: <b>cumprida</b> (implementada), <b>em andamento</b> (em implementação), <b>anunciada ou em formulação</b>, <b>abandonada ou revista</b> ou <b>sem movimentação registrada</b>, quando ainda não houve anúncio, proposta ou ato. Promessas feitas depois do programa, em discursos e entrevistas, entram como novas políticas.</p>
+
+      <h3>Agenda e acordos</h3>
+      <p>Para cada reunião política relevante, o Radar registra quem participou e o que foi combinado, ponto por ponto, com quem relatou e o nível de confirmação. Cada ponto passa por <b>anunciado</b>, <b>em cumprimento</b>, <b>cumprido</b>, <b>descumprido</b> ou <b>desmentido</b>, conforme os fatos aparecem.</p>
 
       <h3>Relevância das movimentações</h3>
       <dl class="lx-defs">
@@ -762,7 +810,7 @@ dash.calc('base_n', {
   description: 'Converte campos aninhados (fontes, órgãos afetados, relatório) de texto JSON para objetos e os campos sim/não para booleanos.',
   fn: (base) => base.map((r) => {
     const o = { ...r };
-    for (const k of ['fontes', 'orgaos_afetados', 'relatorio', 'relatorio_historico', 'relacionamentos', 'itens']) if (typeof o[k] === 'string') { try { o[k] = JSON.parse(o[k]); } catch (e) { o[k] = null; } }
+    for (const k of ['fontes', 'orgaos_afetados', 'relatorio', 'relatorio_historico', 'relacionamentos', 'itens', 'politica_ids', 'participantes', 'ligado_a', 'historico']) if (typeof o[k] === 'string') { try { o[k] = JSON.parse(o[k]); } catch (e) { o[k] = null; } }
     for (const k of ['promessa', 'transicao', 'flag_nomeacao']) o[k] = o[k] === true || o[k] === 'true';
     if (o.novidades != null) o.novidades = Number(o.novidades);
     return o;
@@ -779,6 +827,9 @@ dash.calc('t_transicao', { inputs: ['base_n'], title: 'Equipe de transição', d
 dash.calc('t_orgao', { inputs: ['base_n'], title: 'Órgãos e relatórios', description: 'Linhas da base com tabela = orgao.', fn: (base_n) => base_n.filter((r) => r.tabela === 'orgao') });
 dash.calc('t_pessoa', { inputs: ['base_n'], title: 'Perfis de pessoas', description: 'Linhas da base com tabela = pessoa.', fn: (base_n) => base_n.filter((r) => r.tabela === 'pessoa') });
 dash.calc('t_leitura', { inputs: ['base_n'], title: 'Leitura política', description: 'Linhas da base com tabela = leitura.', fn: (base_n) => base_n.filter((r) => r.tabela === 'leitura') });
+dash.calc('t_promessa', { inputs: ['base_n'], title: 'Promessas do plano de governo', description: 'Linhas da base com tabela = promessa.', fn: (base_n) => base_n.filter((r) => r.tabela === 'promessa') });
+dash.calc('t_reuniao', { inputs: ['base_n'], title: 'Reuniões', description: 'Linhas da base com tabela = reuniao.', fn: (base_n) => base_n.filter((r) => r.tabela === 'reuniao') });
+dash.calc('t_acordo', { inputs: ['base_n'], title: 'Acordos', description: 'Linhas da base com tabela = acordo.', fn: (base_n) => base_n.filter((r) => r.tabela === 'acordo') });
 dash.calc('t_checagem', { inputs: ['base_n'], title: 'Checagens automáticas', description: 'Linhas da base com tabela = checagem.', fn: (base_n) => base_n.filter((r) => r.tabela === 'checagem') });
 dash.calc('t_consolidado', { inputs: ['base_n'], title: 'Consolidados diários', description: 'Linhas da base com tabela = consolidado.', fn: (base_n) => base_n.filter((r) => r.tabela === 'consolidado') });
 dash.calc('indicadores', {
@@ -913,7 +964,7 @@ dash.calc('painel', {
   const EIXOS = ['Cargos', 'Transição', 'Composição política', 'Políticas', 'Reestruturação'];
   const SCHEDULE_HOURS = [1, 4, 7, 10, 13, 16, 19, 22];
   const SCHEDULE_MIN = 17;
-  const TABS = [['como-ler', 'Como ler o Radar'], ['painel', 'Painel'], ['inicio', 'Início'], ['temas', 'Por tema'], ['composicao', 'Composição ministerial'], ['orgaos', 'Órgãos'], ['transicao', 'Transição'], ['politica-partidaria', 'Composição política'], ['politicas', 'Prioridades e políticas públicas'], ['reestruturacao', 'Reestruturação administrativa'], ['linha-do-tempo', 'Linha do tempo'], ['pessoas', 'Busca por pessoa']];
+  const TABS = [['como-ler', 'Como ler o Radar'], ['painel', 'Painel'], ['inicio', 'Início'], ['temas', 'Por tema'], ['composicao', 'Composição ministerial'], ['orgaos', 'Órgãos'], ['transicao', 'Transição'], ['politica-partidaria', 'Composição política'], ['politicas', 'Prioridades e políticas públicas'], ['acordos', 'Agenda e acordos'], ['reestruturacao', 'Reestruturação administrativa'], ['linha-do-tempo', 'Linha do tempo'], ['pessoas', 'Busca por pessoa']];
   const QUICK = [['desde-ontem', 'Alterações desde ontem'], ['confirmacoes', 'Somente confirmações'], ['abertos', 'Somente cargos em aberto'], ['consideracao', 'Somente nomes em consideração'], ['admin', 'Somente mudanças administrativas'], ['mudpol', 'Somente mudanças de políticas'], ['novas', 'Somente novas políticas'], ['promessas', 'Somente promessas em andamento']];
   const QUICK_TAB = { confirmacoes: 'linha-do-tempo', abertos: 'composicao', consideracao: 'composicao', admin: 'reestruturacao', mudpol: 'politicas', novas: 'politicas', promessas: 'politicas' };
 
@@ -949,6 +1000,7 @@ dash.calc('painel', {
     'transicao': '<path d="M4 7h13l-3-3"/><path d="M20 17H7l3 3"/>',
     'politica-partidaria': '<path d="M5 21V4"/><path d="M5 4h11l-2 4 2 4H5"/>',
     'politicas': '<path d="M9 6h11M9 12h11M9 18h11"/><path d="m3 6 1.5 1.5L7 5"/><path d="m3 12 1.5 1.5L7 11"/><path d="m3 18 1.5 1.5L7 17"/>',
+    'acordos': '<path d="M8 12.5 11 15.5l5-5"/><rect x="3" y="4" width="18" height="17" rx="2"/><path d="M8 2v4M16 2v4M3 9h18"/>',
     'reestruturacao': '<rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/><path d="M10 6.5h4a3 3 0 0 1 3 3V14"/><path d="m15 12 2 2 2-2"/>',
     'linha-do-tempo': '<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>',
     'pessoas': '<circle cx="11" cy="11" r="6.5"/><path d="m20 20-4.2-4.2"/>',
@@ -1627,6 +1679,76 @@ dash.calc('painel', {
     drawEvolucao(box, st.evo, pos, nomes, ev, orgaos);
   }
 
+
+  // ---------- promessas ----------
+  const PR_ST = [
+    ['cumprida', 'Cumprida', 'var(--color-ok)'],
+    ['andamento', 'Em andamento', 'var(--dz-c1)'],
+    ['acompanhamento', 'Anunciada ou em formulação', 'var(--dz-c2)'],
+    ['revista', 'Abandonada ou revista', 'var(--dz-c7)'],
+    ['sem', 'Sem movimentação registrada', 'var(--cds-chart-muted)'],
+  ];
+  const prStatus = (pr, pols) => {
+    const ids = Array.isArray(pr.politica_ids) ? pr.politica_ids : [];
+    const ps = pols.filter((p) => ids.includes(p.id)).map((p) => p.status || '');
+    if (/ABANDONADO/.test(pr.status || '')) return 'revista';
+    if (/CUMPRIDA/.test(pr.status || '') || ps.some((s) => /IMPLEMENTADO/.test(s) && !/EM IMPLEMENTAÇÃO/.test(s))) return 'cumprida';
+    if (ps.some((s) => /EM IMPLEMENTAÇÃO/.test(s))) return 'andamento';
+    if (ps.some((s) => /ABANDONADO/.test(s))) return 'revista';
+    if (ps.length) return 'acompanhamento';
+    return 'sem';
+  };
+  function drawPromessas(pols, orgaos) {
+    const prs = rows('t_promessa'); const box = document.getElementById('pr-eixos'); if (!box || !prs || !pols) return;
+    const sel = document.getElementById('pr-st');
+    if (!sel.options.length) { sel.append(new Option('Todas as situações', ''), ...PR_ST.map(([k, l]) => new Option(l, k))); sel.addEventListener('change', () => { st.prSt = sel.value; draw(); }); document.getElementById('pr-q').addEventListener('input', (e) => { st.prQ = e.target.value.trim().toLowerCase(); draw(); }); }
+    const comS = prs.map((p) => ({ ...p, _s: prStatus(p, pols) }));
+    const tot = comS.length || 1; const cnt = Object.fromEntries(PR_ST.map(([k]) => [k, comS.filter((p) => p._s === k).length]));
+    document.getElementById('pr-bar').replaceChildren(...PR_ST.filter(([k]) => cnt[k]).map(([k, l, c]) => { const i = el('i'); i.style.width = (100 * cnt[k] / tot) + '%'; i.style.background = c; i.title = `${l}: ${cnt[k]}`; return i; }));
+    document.getElementById('pr-kpis').replaceChildren(el('div', '', el('b', '', String(comS.length)), el('span', '', 'promessas no inventário')), ...PR_ST.map(([k, l, c]) => el('div', '', el('b', '', String(cnt[k])), el('span', '', Object.assign(el('i'), { style: `background:${c}` }), l))));
+    const f = comS.filter((p) => (!st.prSt || p._s === st.prSt) && (!st.prQ || hay(p, orgName(orgaos, p.orgao_id)).includes(st.prQ)) && (!st.f.area || temaDe(p.area) === st.f.area));
+    const eixos = [...new Set(comS.map((p) => p.eixo))].sort((a, b) => a - b);
+    const lab = Object.fromEntries(PR_ST.map(([k, l, c]) => [k, [l, c]]));
+    box.replaceChildren(...eixos.map((e) => {
+      const all = comS.filter((p) => p.eixo === e); const it = f.filter((p) => p.eixo === e); if (!it.length) return null;
+      const mini = el('span', 'pr-bar pr-mini'); mini.replaceChildren(...PR_ST.filter(([k]) => all.some((p) => p._s === k)).map(([k, , c]) => { const i = el('i'); i.style.width = (100 * all.filter((p) => p._s === k).length / all.length) + '%'; i.style.background = c; return i; }));
+      const mov = all.filter((p) => p._s !== 'sem').length;
+      const d = el('details', '', el('summary', '', el('span', '', `${e}. ${all[0].eixo_nome}`), mini, el('small', '', `${mov} de ${all.length} com movimentação`)),
+        el('ul', 'pr-list', ...it.map((p) => {
+          const links = (Array.isArray(p.politica_ids) ? p.politica_ids : []).map((id) => (pols.find((x) => x.id === id) || {}).tema).filter(Boolean);
+          const t = tag(lab[p._s][0]); t.style.borderColor = lab[p._s][1];
+          return el('li', '', el('span', 'pr-t', p.texto), t, el('span', 'pr-m', el('span', '', orgShort(orgaos, p.orgao_id)), (() => { const f0 = Array.isArray(p.fontes) && p.fontes[0]; const txt = p.pagina && p.pagina !== '—' ? 'programa, p. ' + p.pagina : 'fonte'; return f0 && f0.u ? link(txt, f0.u) : el('span', '', txt); })(), links.length ? el('span', '', 'Ligada a: ' + links.join('; ')) : null, p.nota ? el('span', '', p.nota) : null));
+        })));
+      if (st.prQ || st.prSt) d.open = true;
+      return d;
+    }).filter(Boolean));
+    if (!box.children.length) box.replaceChildren(vazio('Nenhuma promessa com esses filtros.'));
+  }
+
+  // ---------- agenda e acordos ----------
+  const AC_ST = { '🔵 ANUNCIADO': 'var(--dz-c1)', '🟡 EM CUMPRIMENTO': 'var(--dz-c2)', '🟢 CUMPRIDO': 'var(--color-ok)', '🔴 DESCUMPRIDO': 'var(--dz-c7)', '↩ DESMENTIDO': 'var(--dz-c8)' };
+  function drawAcordos(pols) {
+    const rs = rows('t_reuniao'); const as = rows('t_acordo'); const box = document.getElementById('ac-list'); if (!box || !rs || !as) return;
+    const res = document.getElementById('ac-resumo');
+    const cont = {}; as.forEach((a) => { cont[a.status] = (cont[a.status] || 0) + 1; });
+    res.replaceChildren(tag(`${rs.length} reuniões`), tag(`${as.length} pontos acordados`), ...Object.entries(cont).map(([k, n]) => tag(`${k}: ${n}`)));
+    const R = rs.slice().sort((a, b) => (a.data < b.data ? 1 : -1));
+    box.replaceChildren(...(R.length ? R.map((r) => {
+      const A = as.filter((a) => a.reuniao_id === r.id);
+      return el('div', 'lx-card ac-meet',
+        el('div', 'ac-head', el('h2', '', r.titulo), el('span', 'ac-date', `${dt(r.data)} · ${r.local || ''}`)),
+        el('div', 'ac-people', ...(Array.isArray(r.participantes) ? r.participantes : []).map((n) => plink(n.replace(/\s*\(.*\)$/, '')))),
+        el('div', 'lx-row', tag(r.confiabilidade), r.carater ? el('span', 'lx-muted lx-howto', r.carater) : null),
+        A.length ? el('ul', 'ac-items', ...A.map((a) => {
+          const t = tag(a.status, 'lx-strong'); t.style.borderColor = AC_ST[a.status] || '';
+          const links = (Array.isArray(a.ligado_a) ? a.ligado_a : []).map((id) => (pols.find((x) => x.id === id) || {}).tema).filter(Boolean);
+          const hist = Array.isArray(a.historico) && a.historico.length ? el('span', '', 'Histórico: ' + a.historico.map((x) => `${dd(x.data)} ${x.texto}`).join(' · ')) : null;
+          return el('li', '', el('span', '', a.item), t, el('span', 'ac-m', el('span', '', 'Relatado por: ' + a.quem_relatou), tag(a.confiabilidade), a.prazo ? el('span', '', 'Prazo: ' + (/^\d{4}-/.test(a.prazo) ? dd(a.prazo) : a.prazo)) : null, links.length ? el('span', '', 'Ligado a: ' + links.join('; ')) : null, a.nota ? el('span', '', a.nota) : null, hist, fontes(a.fontes)));
+        })) : el('p', 'lx-empty', 'Nenhum acordo relatado até agora.'),
+        el('div', 'lx-src', fontes(r.fontes)));
+    }) : [el('p', 'lx-empty', 'Nenhuma reunião registrada ainda.')]));
+  }
+
   function drawPainelTemas(orgaos, nomes, pols, ev) {
     const box = document.getElementById('painel-temas-box'); if (!box || !orgaos.length || !pols || !ev) return;
     const semana = new Date(Date.now() - 7 * 86400000).toISOString();
@@ -1718,9 +1840,9 @@ dash.calc('painel', {
     { const t = TABS.find((x) => x[0] === st.tab); if (t) mcur.textContent = t[1]; }
     quick.querySelectorAll('.lx-chip').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.q === st.quick)));
     document.querySelectorAll('[data-pane]').forEach((s) => { s.hidden = s.dataset.pane !== st.tab; });
-    const showF = !['painel', 'inicio', 'pessoas', 'temas', 'como-ler'].includes(st.tab) && !(st.tab === 'orgaos' && st.org);
+    const showF = !['painel', 'inicio', 'pessoas', 'temas', 'como-ler', 'acordos'].includes(st.tab) && !(st.tab === 'orgaos' && st.org);
     document.getElementById('lx-filterbar').hidden = !showF;
-    { const ab = document.getElementById('lx-active'); const fa = filtrosAtivos(); ab.hidden = !showF || !fa.length; if (!ab.hidden) { const b = el('button', 'lx-chip', 'Limpar filtros'); b.type = 'button'; b.addEventListener('click', limparTudo); ab.replaceChildren(el('b', '', 'Filtros ativos:'), fa.join(' · '), b); } } quick.hidden = ['pessoas', 'painel', 'temas', 'como-ler'].includes(st.tab);
+    { const ab = document.getElementById('lx-active'); const fa = filtrosAtivos(); ab.hidden = !showF || !fa.length; if (!ab.hidden) { const b = el('button', 'lx-chip', 'Limpar filtros'); b.type = 'button'; b.addEventListener('click', limparTudo); ab.replaceChildren(el('b', '', 'Filtros ativos:'), fa.join(' · '), b); } } quick.hidden = ['pessoas', 'painel', 'temas', 'como-ler', 'acordos'].includes(st.tab);
     for (const [k, id] of Object.entries(fIds)) { const n = document.getElementById(id); if (n !== document.activeElement) n.value = k === 'q' ? (n.value && n.value.trim().toLowerCase() === st.f.q ? n.value : st.f.q) : st.f[k]; }
 
     const orgaos = rows('t_orgao') || []; const pos = rows('t_posicao'); const nomes = rows('t_nome'); const ev = rows('t_evento'); const pols = rows('t_politica'); const checks = rows('t_checagem'); const parts = rows('t_partido');
@@ -1748,7 +1870,8 @@ dash.calc('painel', {
     if (st.tab === 'orgaos') drawOrgaos(rows('t_orgao'), pos, nomes, pols, ev);
     if (st.tab === 'transicao') drawTransicao(rows('t_transicao'));
     if (st.tab === 'politica-partidaria') { drawPartidos(parts, rows('t_balanco')); drawPartidosGraf(); }
-    if (st.tab === 'politicas') { drawPoliticas(pols, orgaos); drawPolGraf(); }
+    if (st.tab === 'politicas') { drawPromessas(pols || [], orgaos); drawPoliticas(pols, orgaos); drawPolGraf(); }
+    if (st.tab === 'acordos') drawAcordos(pols || []);
     if (st.tab === 'reestruturacao') drawReestr(rows('t_reestr'), orgaos);
     if (st.tab === 'linha-do-tempo') { drawEvoCard(pos, nomes, ev, orgaos); drawTimeline(ev, orgaos); drawRitmo('ritmo2-box', 'ritmo2-leg'); }
     if (st.tab === 'pessoas') drawPessoas(nomes, pos, rows('t_transicao'), ev, pols, orgaos);
