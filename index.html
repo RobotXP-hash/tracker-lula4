@@ -1118,7 +1118,9 @@ dash.calc('painel', {
   function evItem(e, orgaos, showDay) {
     const meta = el('div', 'lx-row', relTag(e.relevancia), tag(e.eixo), tag(orgShort(orgaos, e.orgao_id)), tag(e.confiabilidade));
     const mv = (e.de && e.de !== '—') || (e.para && e.para !== '—') ? el('span', 'lx-muted', `${e.de && e.de !== '—' ? e.de : '—'} → ${e.para && e.para !== '—' ? e.para : '—'}`) : null;
-    const it = el('div', 'lx-item', el('span', 'lx-when', showDay ? dt(e.data) : fH.format(new Date(e.data))), el('div', '', el('span', 'lx-b', e.titulo), mv, meta, el('span', 'lx-src', link(e.fonte, e.link))));
+    const rg = e.registrado_em || e.data;
+    if (e.data && e.registrado_em && dayKey(e.data) + fH.format(new Date(e.data)) !== dayKey(rg) + fH.format(new Date(rg))) meta.append(el('span', 'lx-muted lx-howto', 'fato de ' + dt(e.data)));
+    const it = el('div', 'lx-item', el('span', 'lx-when', showDay ? dt(rg) : fH.format(new Date(rg))), el('div', '', el('span', 'lx-b', e.titulo), mv, meta, el('span', 'lx-src', link(e.fonte, e.link))));
     it.dataset.key = e.id; return it;
   }
 
@@ -1288,7 +1290,7 @@ dash.calc('painel', {
     R.sort((a, b) => (reg(a) < reg(b) ? 1 : reg(a) > reg(b) ? -1 : (a.data < b.data ? 1 : -1)));
     const ordC = (rows('t_checagem') || []).slice().sort((x, y) => (x.at < y.at ? 1 : -1)); const prevC = ordC.find((c) => ordC[0] && (new Date(ordC[0].at) - new Date(c.at)) >= 2 * 3600000); const recente = prevC ? new Date(prevC.at).getTime() : Date.now() - 24 * 3600000;
     const out = []; let last = '';
-    for (const e of R) { const k = dayKey(reg(e)); if (k !== last) { out.push(el('div', 'lx-day', 'Registrado em ' + fDay.format(new Date(reg(e))))); last = k; } const it = evItem(e, orgaos, true); const w = it.querySelector('.lx-when'); if (w) { w.replaceChildren(...[el('span', '', fH.format(new Date(reg(e)))), new Date(reg(e)) > recente ? el('span', 'lx-novo', 'novo') : null].filter(Boolean)); } const meta = it.querySelector('.lx-row'); if (meta && e.data && dayKey(e.data) + fH.format(new Date(e.data)) !== dayKey(reg(e)) + fH.format(new Date(reg(e)))) meta.append(el('span', 'lx-muted lx-howto', 'fato de ' + dt(e.data))); out.push(it); }
+    for (const e of R) { const k = dayKey(reg(e)); if (k !== last) { out.push(el('div', 'lx-day', 'Registrado em ' + fDay.format(new Date(reg(e))))); last = k; } const it = evItem(e, orgaos, true); const w = it.querySelector('.lx-when'); if (w) { w.replaceChildren(...[el('span', '', fH.format(new Date(reg(e)))), new Date(reg(e)) > recente ? el('span', 'lx-novo', 'novo') : null].filter(Boolean)); } out.push(it); }
     box.replaceChildren(...(out.length ? out : [vazio('Nenhum evento com esses filtros.')]));
   }
 
