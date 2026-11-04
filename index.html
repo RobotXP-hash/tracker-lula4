@@ -427,7 +427,7 @@ svg.dz-donut { width: 100%; height: auto; }
 <body>
 <header class="hb" role="banner"><div class="hb-in">
   <div class="hb-txt">
-    <span class="hb-eyebrow"><span class="hb-live" aria-hidden="true"></span>Monitor do 4º mandato · atualizado a cada 3 horas</span>
+    <span class="hb-eyebrow"><span class="hb-live" aria-hidden="true"></span>Monitor do 4º mandato · atualizado 6 vezes por dia útil</span>
     <h1 class="hb-title">Radar <b>Lula 4</b></h1>
     <span class="hb-line" aria-hidden="true"><s></s><i></i></span>
     <p class="hb-desc">A formação do novo governo e as prioridades do 4º mandato, em um só lugar: quem fica, quem sai e quem está sendo considerado em cada pasta, o espaço dos partidos e as mudanças de políticas públicas. Sempre com fonte e nível de confirmação.</p>
@@ -476,7 +476,7 @@ svg.dz-donut { width: 100%; height: auto; }
     <div class="lx-meta lx-muted" id="lx-meta" data-source="t_checagem">
       <span>Última checagem automática: <b id="lx-ult" class="dash-skeleton">—</b></span>
       <span>Próxima checagem: <b id="lx-prox" class="dash-skeleton">—</b></span>
-      <span>Checagens a cada 3 horas; o painel só muda quando há informação nova.</span>
+      <span>Checagens às 7h17, 10h17, 13h17, 16h17, 19h17 e 22h17, em dias úteis; o painel só muda quando há informação nova.</span>
     </div>
   </header>
 
@@ -772,7 +772,7 @@ svg.dz-donut { width: 100%; height: auto; }
 
 </main>
 <footer class="foot"><div class="foot-in">
-  <span>Atualização automática a cada 3 horas a partir do Diário Oficial da União, do Planalto, dos ministérios e da imprensa nacional. Cada registro indica a fonte e o nível de confirmação.</span>
+  <span>Atualização automática 6 vezes por dia útil (7h17 às 22h17) a partir do Diário Oficial da União, do Planalto, dos ministérios e da imprensa nacional. Cada registro indica a fonte e o nível de confirmação.</span>
   <span>Probabilidades não são estimadas. Nome mencionado não equivale a nome em consideração.</span>
 </div></footer>
 
@@ -962,7 +962,7 @@ dash.calc('painel', {
   const temaNome = (id) => (TEMAS.find((t) => t[0] === id) || [id, 'Outros temas'])[1];
   const CONF = ['OFICIAL', 'CONFIRMADO PELA IMPRENSA', 'NEGOCIAÇÃO', 'NOME EM CONSIDERAÇÃO', 'MENÇÃO', 'ESPECULAÇÃO'];
   const EIXOS = ['Cargos', 'Transição', 'Composição política', 'Políticas', 'Reestruturação'];
-  const SCHEDULE_HOURS = [1, 4, 7, 10, 13, 16, 19, 22];
+  const SCHEDULE_HOURS = [7, 10, 13, 16, 19, 22];
   const SCHEDULE_MIN = 17;
   const TABS = [['como-ler', 'Como ler o Radar'], ['painel', 'Painel'], ['inicio', 'Início'], ['temas', 'Por tema'], ['composicao', 'Composição ministerial'], ['orgaos', 'Órgãos'], ['transicao', 'Transição'], ['politica-partidaria', 'Composição política'], ['politicas', 'Prioridades e políticas públicas'], ['acordos', 'Agenda e acordos'], ['reestruturacao', 'Reestruturação administrativa'], ['linha-do-tempo', 'Linha do tempo'], ['pessoas', 'Busca por pessoa']];
   const QUICK = [['desde-ontem', 'Alterações desde ontem'], ['confirmacoes', 'Somente confirmações'], ['abertos', 'Somente cargos em aberto'], ['consideracao', 'Somente nomes em consideração'], ['admin', 'Somente mudanças administrativas'], ['mudpol', 'Somente mudanças de políticas'], ['novas', 'Somente novas políticas'], ['promessas', 'Somente promessas em andamento']];
