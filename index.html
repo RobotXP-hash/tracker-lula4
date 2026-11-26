@@ -257,6 +257,7 @@ body.lx-mini .lx-side-sec-sep { display: block; height: 1px; background: var(--s
 .ac-items { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 0; }
 .ac-items li { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 4px 12px; padding: 10px 0; border-top: 1px solid var(--color-border-line); }
 .ac-items .ac-m { grid-column: 1 / -1; font-size: var(--cds-font-size-caption); color: var(--color-fg-muted); display: flex; flex-wrap: wrap; gap: 4px 10px; }
+.pf-ul { margin: 0; padding-left: 1.1rem; display: flex; flex-direction: column; gap: 6px; } .pf-f, .pf-f a { color: var(--color-fg-muted); font-size: var(--cds-font-size-caption); } .pf-blk { display: flex; flex-direction: column; gap: 4px; } .pf-lab { font-size: 11px; letter-spacing: .05em; text-transform: uppercase; color: var(--color-fg-muted); } .pf-leit p { margin: 0; } .pf-leit { border-left: 3px solid var(--color-fg-muted); } .pf-sint { margin: 0; font-size: 1.02rem; line-height: 1.5; } .pf-eixo { gap: var(--cds-gap-md); } .pf-head .lx-tag { white-space: normal; max-width: 100%; } .pf-head .lx-row { flex-wrap: wrap; } #pf-sel { flex-wrap: wrap; }
 .lx-grid2 { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 24rem), 1fr)); gap: var(--cds-gap-md); }
 .lx-read { display: flex; flex-direction: column; gap: var(--cds-gap-sm); }
 .lx-read details { border-bottom: 1px solid var(--color-border-line); padding-bottom: var(--cds-pad-sm); }
@@ -698,6 +699,14 @@ svg.dz-donut { width: 100%; height: auto; }
     </div>
   </section>
 
+  <section id="perfis" data-pane="perfis" class="lx" hidden>
+    <div class="lx-card" data-source="t_perfil">
+      <h2>Perfis</h2>
+      <p class="lx-muted">Análises de quem assume ou pode assumir cargos-chave: trajetória, formação e o que a pessoa defende e já fez, por eixo. Cada eixo separa fatos documentados (com fonte) da leitura analítica.</p>
+      <div class="lx-row" id="pf-sel"></div>
+      <div id="pf-out" class="lx"></div>
+    </div>
+  </section>
   <section id="como-ler" data-pane="como-ler" class="lx" hidden>
     <div class="lx-card lx-metodo">
       <h2>Como ler o Radar</h2>
@@ -825,6 +834,7 @@ dash.calc('t_partido', { inputs: ['base_n'], title: 'Partidos', description: 'Li
 dash.calc('t_balanco', { inputs: ['base_n'], title: 'Balanço de forças', description: 'Linhas da base com tabela = balanco.', fn: (base_n) => base_n.filter((r) => r.tabela === 'balanco') });
 dash.calc('t_transicao', { inputs: ['base_n'], title: 'Equipe de transição', description: 'Linhas da base com tabela = transicao.', fn: (base_n) => base_n.filter((r) => r.tabela === 'transicao') });
 dash.calc('t_orgao', { inputs: ['base_n'], title: 'Órgãos e relatórios', description: 'Linhas da base com tabela = orgao.', fn: (base_n) => base_n.filter((r) => r.tabela === 'orgao') });
+dash.calc('t_perfil', { inputs: ['base_n'], title: 'Perfis analíticos', description: 'Linhas da base com tabela = perfil.', fn: (base_n) => base_n.filter((r) => r.tabela === 'perfil') });
 dash.calc('t_pessoa', { inputs: ['base_n'], title: 'Perfis de pessoas', description: 'Linhas da base com tabela = pessoa.', fn: (base_n) => base_n.filter((r) => r.tabela === 'pessoa') });
 dash.calc('t_leitura', { inputs: ['base_n'], title: 'Leitura política', description: 'Linhas da base com tabela = leitura.', fn: (base_n) => base_n.filter((r) => r.tabela === 'leitura') });
 dash.calc('t_promessa', { inputs: ['base_n'], title: 'Promessas do plano de governo', description: 'Linhas da base com tabela = promessa.', fn: (base_n) => base_n.filter((r) => r.tabela === 'promessa') });
@@ -964,7 +974,7 @@ dash.calc('painel', {
   const EIXOS = ['Cargos', 'Transição', 'Composição política', 'Políticas', 'Reestruturação'];
   const SCHEDULE_HOURS = [7, 10, 13, 16, 19, 22];
   const SCHEDULE_MIN = 17;
-  const TABS = [['como-ler', 'Como ler o Radar'], ['painel', 'Painel'], ['inicio', 'Início'], ['temas', 'Por tema'], ['composicao', 'Composição ministerial'], ['orgaos', 'Órgãos'], ['transicao', 'Transição'], ['politica-partidaria', 'Composição política'], ['politicas', 'Prioridades e políticas públicas'], ['acordos', 'Agenda e acordos'], ['reestruturacao', 'Reestruturação administrativa'], ['linha-do-tempo', 'Linha do tempo'], ['pessoas', 'Busca por pessoa']];
+  const TABS = [['como-ler', 'Como ler o Radar'], ['painel', 'Painel'], ['inicio', 'Início'], ['temas', 'Por tema'], ['composicao', 'Composição ministerial'], ['orgaos', 'Órgãos'], ['transicao', 'Transição'], ['politica-partidaria', 'Composição política'], ['politicas', 'Prioridades e políticas públicas'], ['acordos', 'Agenda e acordos'], ['reestruturacao', 'Reestruturação administrativa'], ['linha-do-tempo', 'Linha do tempo'], ['pessoas', 'Busca por pessoa'], ['perfis', 'Perfis']];
   const QUICK = [['desde-ontem', 'Alterações desde ontem'], ['confirmacoes', 'Somente confirmações'], ['abertos', 'Somente cargos em aberto'], ['consideracao', 'Somente nomes em consideração'], ['admin', 'Somente mudanças administrativas'], ['mudpol', 'Somente mudanças de políticas'], ['novas', 'Somente novas políticas'], ['promessas', 'Somente promessas em andamento']];
   const QUICK_TAB = { confirmacoes: 'linha-do-tempo', abertos: 'composicao', consideracao: 'composicao', admin: 'reestruturacao', mudpol: 'politicas', novas: 'politicas', promessas: 'politicas' };
 
@@ -1004,6 +1014,7 @@ dash.calc('painel', {
     'reestruturacao': '<rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/><path d="M10 6.5h4a3 3 0 0 1 3 3V14"/><path d="m15 12 2 2 2-2"/>',
     'linha-do-tempo': '<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>',
     'pessoas': '<circle cx="11" cy="11" r="6.5"/><path d="m20 20-4.2-4.2"/>',
+    'perfis': '<rect x="3" y="4" width="18" height="16" rx="2"/><circle cx="9" cy="10" r="2.5"/><path d="M5.5 16.5c.6-1.9 1.9-3 3.5-3s2.9 1.1 3.5 3"/><path d="M15 9h3M15 12.5h3"/>',
   };
   const SECOES = { 'como-ler': 'Começo', 'composicao': 'Governo', 'politica-partidaria': 'Política e prioridades', 'linha-do-tempo': 'Acompanhar' };
   const svgIcon = (id) => { const s = document.createElementNS('http://www.w3.org/2000/svg', 'svg'); s.setAttribute('viewBox', '0 0 24 24'); s.setAttribute('aria-hidden', 'true'); s.innerHTML = ICON[id] || '<circle cx="12" cy="12" r="8"/>'; return s; };
@@ -1836,15 +1847,39 @@ dash.calc('painel', {
     box.replaceChildren(head, orgCard, el('div', 'lx-grid2', nomesCard, polCard), evCard);
   }
 
+
+  function drawPerfis() {
+    const out = document.getElementById('pf-out'); const selb = document.getElementById('pf-sel');
+    const P = (rows('t_perfil') || []).slice().sort((a, b) => (a.ordem || 99) - (b.ordem || 99) || a.nome.localeCompare(b.nome, 'pt'));
+    if (!P.length) { out.replaceChildren(el('p', 'lx-empty', 'Nenhum perfil analítico registrado ainda.')); selb.replaceChildren(); return; }
+    if (!st.perfil || !P.find((p) => p.id === st.perfil)) st.perfil = P[0].id;
+    selb.replaceChildren(...P.map((p) => { const b = el('button', 'lx-chip', p.nome); b.type = 'button'; b.setAttribute('aria-pressed', String(p.id === st.perfil)); b.addEventListener('click', () => { st.perfil = p.id; draw(); }); return b; }));
+    const p = P.find((x) => x.id === st.perfil);
+    const kv = (pairs) => el('dl', 'lx-kv', ...pairs.flatMap(([k, v]) => [el('dt', '', k), el('dd', '', v instanceof Node ? v : (v || '—'))]));
+    const items = (arr) => el('ul', 'pf-ul', ...(arr || []).map((it) => el('li', '', typeof it === 'string' ? it : el('span', '', it.t, it.f ? el('span', 'pf-f', ' (', link(it.f.v + (it.f.d ? ', ' + dd(it.f.d) : ''), it.f.u), ')') : null))));
+    const head = el('div', 'lx-card pf-head', el('div', 'lx-row', tag(p.status || '—', 'lx-strong'), p.atualizado ? el('span', 'lx-when', 'Atualizado em ' + dd(p.atualizado)) : null),
+      el('h2', '', p.nome), el('p', 'lx-muted', p.cargo_em_jogo || ''), p.sintese ? el('p', 'pf-sint', p.sintese) : null);
+    const dados = el('div', 'lx-card', el('h3', '', 'Quem é'), kv((p.dados || []).map((d) => [d.rotulo, d.valor])));
+    const traj = el('div', 'lx-card', el('h3', '', 'Trajetória'), el('div', 'lx-feed', ...(p.trajetoria || []).map((t) => el('div', 'lx-item', el('span', 'lx-when', t.periodo), el('div', '', el('span', '', t.texto), t.f ? el('span', 'lx-src', link(t.f.v, t.f.u)) : null)))));
+    const eixos = (p.eixos || []).map((e) => el('div', 'lx-card pf-eixo', el('h3', '', e.eixo),
+      el('div', 'pf-blk', el('b', 'pf-lab', 'O que defende (declarações)'), e.defende && e.defende.length ? items(e.defende) : el('p', 'lx-muted', 'Nenhum posicionamento público localizado.')),
+      el('div', 'pf-blk', el('b', 'pf-lab', 'O que já fez no setor'), e.fez && e.fez.length ? items(e.fez) : el('p', 'lx-muted', 'Nada localizado.')),
+      e.leitura ? el('div', 'pf-blk pf-leit', el('b', 'pf-lab', 'Leitura (interpretação)'), el('p', '', e.leitura)) : null,
+      e.observar ? el('div', 'pf-blk', el('b', 'pf-lab', 'O que observar'), el('p', '', e.observar)) : null));
+    out.replaceChildren(...[head, el('div', 'lx-grid2', dados, traj), ...eixos,
+      p.leitura_geral ? el('div', 'lx-card pf-leit', el('h3', '', 'Leitura geral'), el('p', '', p.leitura_geral)) : null,
+      p.lacunas && p.lacunas.length ? el('div', 'lx-card', el('h3', '', 'Lacunas e cautelas'), items(p.lacunas)) : null,
+      el('div', 'lx-card', el('h3', '', 'Fontes'), fontes(p.fontes))].filter(Boolean));
+  }
   // ---------- draw ----------
   function draw() {
     nav.querySelectorAll('.lx-tab').forEach((b) => b.setAttribute('aria-selected', String(b.dataset.tab === st.tab)));
     { const t = TABS.find((x) => x[0] === st.tab); if (t) mcur.textContent = t[1]; }
     quick.querySelectorAll('.lx-chip').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.q === st.quick)));
     document.querySelectorAll('[data-pane]').forEach((s) => { s.hidden = s.dataset.pane !== st.tab; });
-    const showF = !['painel', 'inicio', 'pessoas', 'temas', 'como-ler', 'acordos'].includes(st.tab) && !(st.tab === 'orgaos' && st.org);
+    const showF = !['painel', 'inicio', 'pessoas', 'perfis', 'temas', 'como-ler', 'acordos'].includes(st.tab) && !(st.tab === 'orgaos' && st.org);
     document.getElementById('lx-filterbar').hidden = !showF;
-    { const ab = document.getElementById('lx-active'); const fa = filtrosAtivos(); ab.hidden = !showF || !fa.length; if (!ab.hidden) { const b = el('button', 'lx-chip', 'Limpar filtros'); b.type = 'button'; b.addEventListener('click', limparTudo); ab.replaceChildren(el('b', '', 'Filtros ativos:'), fa.join(' · '), b); } } quick.hidden = ['pessoas', 'painel', 'temas', 'como-ler', 'acordos'].includes(st.tab);
+    { const ab = document.getElementById('lx-active'); const fa = filtrosAtivos(); ab.hidden = !showF || !fa.length; if (!ab.hidden) { const b = el('button', 'lx-chip', 'Limpar filtros'); b.type = 'button'; b.addEventListener('click', limparTudo); ab.replaceChildren(el('b', '', 'Filtros ativos:'), fa.join(' · '), b); } } quick.hidden = ['pessoas', 'perfis', 'painel', 'temas', 'como-ler', 'acordos'].includes(st.tab);
     for (const [k, id] of Object.entries(fIds)) { const n = document.getElementById(id); if (n !== document.activeElement) n.value = k === 'q' ? (n.value && n.value.trim().toLowerCase() === st.f.q ? n.value : st.f.q) : st.f[k]; }
 
     const orgaos = rows('t_orgao') || []; const pos = rows('t_posicao'); const nomes = rows('t_nome'); const ev = rows('t_evento'); const pols = rows('t_politica'); const checks = rows('t_checagem'); const parts = rows('t_partido');
@@ -1876,6 +1911,7 @@ dash.calc('painel', {
     if (st.tab === 'acordos') drawAcordos(pols || []);
     if (st.tab === 'reestruturacao') drawReestr(rows('t_reestr'), orgaos);
     if (st.tab === 'linha-do-tempo') { drawEvoCard(pos, nomes, ev, orgaos); drawTimeline(ev, orgaos); drawRitmo('ritmo2-box', 'ritmo2-leg'); }
+    if (st.tab === 'perfis') drawPerfis();
     if (st.tab === 'pessoas') drawPessoas(nomes, pos, rows('t_transicao'), ev, pols, orgaos);
   }
   dash.onData(draw);
