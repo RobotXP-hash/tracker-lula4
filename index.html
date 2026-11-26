@@ -257,7 +257,7 @@ body.lx-mini .lx-side-sec-sep { display: block; height: 1px; background: var(--s
 .ac-items { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 0; }
 .ac-items li { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 4px 12px; padding: 10px 0; border-top: 1px solid var(--color-border-line); }
 .ac-items .ac-m { grid-column: 1 / -1; font-size: var(--cds-font-size-caption); color: var(--color-fg-muted); display: flex; flex-wrap: wrap; gap: 4px 10px; }
-.pf-ul { margin: 0; padding-left: 1.1rem; display: flex; flex-direction: column; gap: 6px; } .pf-f, .pf-f a { color: var(--color-fg-muted); font-size: var(--cds-font-size-caption); } .pf-blk { display: flex; flex-direction: column; gap: 4px; } .pf-lab { font-size: 11px; letter-spacing: .05em; text-transform: uppercase; color: var(--color-fg-muted); } .pf-leit p { margin: 0; } .pf-leit { border-left: 3px solid var(--color-fg-muted); } .pf-sint { margin: 0; font-size: 1.02rem; line-height: 1.5; } .pf-eixo { gap: var(--cds-gap-md); } .pf-head .lx-tag { white-space: normal; max-width: 100%; } .pf-head .lx-row { flex-wrap: wrap; } #pf-sel { flex-wrap: wrap; }
+.pf-ul { margin: 0; padding-left: 1.1rem; display: flex; flex-direction: column; gap: 6px; } .pf-f, .pf-f a { color: var(--color-fg-muted); font-size: var(--cds-font-size-caption); } .pf-blk { display: flex; flex-direction: column; gap: 4px; } .pf-lab { font-size: 11px; letter-spacing: .05em; text-transform: uppercase; color: var(--color-fg-muted); } .pf-leit p { margin: 0; } .pf-leit { border-left: 3px solid var(--color-fg-muted); } .pf-sint { margin: 0; font-size: 1.02rem; line-height: 1.5; } .pf-eixo { gap: var(--cds-gap-md); } .pf-head .lx-tag { white-space: normal; max-width: 100%; } .pf-head .lx-row { flex-wrap: wrap; } .pf-top { display: flex; align-items: center; gap: 16px; } .pf-top h2 { margin: 0; } .pf-top p { margin: 4px 0 0; } .pf-av { width: 96px; height: 96px; flex: none; } #pf-sel { flex-wrap: wrap; }
 .lx-grid2 { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 24rem), 1fr)); gap: var(--cds-gap-md); }
 .lx-read { display: flex; flex-direction: column; gap: var(--cds-gap-sm); }
 .lx-read details { border-bottom: 1px solid var(--color-border-line); padding-bottom: var(--cds-pad-sm); }
@@ -1857,8 +1857,11 @@ dash.calc('painel', {
     const p = P.find((x) => x.id === st.perfil);
     const kv = (pairs) => el('dl', 'lx-kv', ...pairs.flatMap(([k, v]) => [el('dt', '', k), el('dd', '', v instanceof Node ? v : (v || '—'))]));
     const items = (arr) => el('ul', 'pf-ul', ...(arr || []).map((it) => el('li', '', typeof it === 'string' ? it : el('span', '', it.t, it.f ? el('span', 'pf-f', ' (', link(it.f.v + (it.f.d ? ', ' + dd(it.f.d) : ''), it.f.u), ')') : null))));
+    const pess = (rows('t_pessoa') || []).find((x) => x.id === p.pessoa_id); const fsrc = fotoSrc(pess);
+    const ini = p.nome.split(/\s+/).filter(Boolean).map((w) => w[0]).filter((c) => /\p{Lu}/u.test(c)).slice(0, 2).join('');
+    const av = fsrc ? Object.assign(el('img', 'lx-avatar pf-av'), { src: fsrc, alt: 'Foto de ' + p.nome }) : el('div', 'lx-avatar pf-av', ini);
     const head = el('div', 'lx-card pf-head', el('div', 'lx-row', tag(p.status || '—', 'lx-strong'), p.atualizado ? el('span', 'lx-when', 'Atualizado em ' + dd(p.atualizado)) : null),
-      el('h2', '', p.nome), el('p', 'lx-muted', p.cargo_em_jogo || ''), p.sintese ? el('p', 'pf-sint', p.sintese) : null);
+      el('div', 'pf-top', av, el('div', '', el('h2', '', p.nome), el('p', 'lx-muted', p.cargo_em_jogo || ''))), p.sintese ? el('p', 'pf-sint', p.sintese) : null);
     const dados = el('div', 'lx-card', el('h3', '', 'Quem é'), kv((p.dados || []).map((d) => [d.rotulo, d.valor])));
     const traj = el('div', 'lx-card', el('h3', '', 'Trajetória'), el('div', 'lx-feed', ...(p.trajetoria || []).map((t) => el('div', 'lx-item', el('span', 'lx-when', t.periodo), el('div', '', el('span', '', t.texto), t.f ? el('span', 'lx-src', link(t.f.v, t.f.u)) : null)))));
     const eixos = (p.eixos || []).map((e) => el('div', 'lx-card pf-eixo', el('h3', '', e.eixo),
